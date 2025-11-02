@@ -1,0 +1,176 @@
+{% extends "reviews/layout4.html" %}
+{% load static %}
+
+{% block title %}
+{% if is_editing %}Edit Review{% else %}Write Review{% endif %} - {{ job.title }} - Work Hub
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="card border-primary mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-star me-2"></i>
+                        {% if is_editing %}Edit Your Review{% else %}Write a Review{% endif %}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="text-primary">{{ job.title }}</h5>
+                            <p class="mb-1">
+                                <strong>Freelancer:</strong> 
+                                <span class="text-info">{{ job.freelancer.username }}</span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Budget:</strong> 
+                                <span class="text-success">${{ job.budget }}</span>
+                            </p>
+                            <p class="mb-0">
+                                <strong>Completed:</strong> 
+                                {{ job.updated_at|date:"F j, Y" }}
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="badge bg-success fs-6">
+                                <i class="fas fa-check-circle"></i> Completed
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Form -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" class="review-form">
+                        {% csrf_token %}
+                        
+                        <!-- Rating Section -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Rating *</label>
+                            <p class="text-muted small">Rate from 1 to 5 stars</p>
+                            
+                            <div class="star-rating-container">
+                                <div class="star-display mb-3">
+                                    <span class="selected-rating-text">
+                                        {% if is_editing %}{{ review.rating }} Star{{ review.rating|pluralize }} - 
+                                            {% if review.rating == 1 %}Poor
+                                            {% elif review.rating == 2 %}Fair
+                                            {% elif review.rating == 3 %}Good
+                                            {% elif review.rating == 4 %}Very Good
+                                            {% elif review.rating == 5 %}Excellent
+                                            {% endif %}
+                                        {% else %}Click stars to rate{% endif %}
+                                    </span>
+                                </div>
+                                
+                                <div class="star-rating-input">
+                                    {% for i in "12345" %}
+                                        <input type="radio" 
+                                               name="rating" 
+                                               value="{{ forloop.counter }}" 
+                                               id="rating_{{ forloop.counter }}"
+                                               {% if is_editing and review.rating == forloop.counter %}checked{% endif %}
+                                               class="star-input">
+                                        <label for="rating_{{ forloop.counter }}" 
+                                               class="star-label" 
+                                               data-rating="{{ forloop.counter }}">
+                                            <i class="fas fa-star"></i>
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="rating-labels mt-2">
+                                    <span class="rating-label" data-rating="1">Poor</span>
+                                    <span class="rating-label" data-rating="2">Fair</span>
+                                    <span class="rating-label" data-rating="3">Good</span>
+                                    <span class="rating-label" data-rating="4">Very Good</span>
+                                    <span class="rating-label" data-rating="5">Excellent</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Feedback Section -->
+                        <div class="mb-4">
+                            <label for="feedback" class="form-label fw-bold">
+                                Your Review *
+                            </label>
+                            <p class="text-muted small">Share your experience working with this freelancer</p>
+                            
+                            <textarea 
+                                name="feedback" 
+                                id="feedback" 
+                                class="form-control"
+                                rows="6"
+                                maxlength="1000"
+                                placeholder="Share your experience working with this freelancer. Be specific about communication, work quality, timeliness, and professionalism."
+                                required>{% if is_editing %}{{ review.feedback }}{% endif %}</textarea>
+                            
+                            <div class="character-count mt-2">
+                                <small class="text-muted">
+                                    <span id="char-count">{% if is_editing %}{{ review.feedback|length }}{% else %}0{% endif %}</span>/1000 characters
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Public Review Checkbox -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input 
+                                    type="checkbox" 
+                                    name="is_public" 
+                                    id="is_public" 
+                                    class="form-check-input"
+                                    {% if is_editing %}
+                                        {% if review.is_public %}checked{% endif %}
+                                    {% else %}
+                                        checked
+                                    {% endif %}>
+                                <label class="form-check-label" for="is_public">
+                                    Make this review visible to others
+                                </label>
+                                <div class="form-text">When checked, other users will be able to see this review on the freelancer's profile</div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                {% if is_editing %}Update Review{% else %}Submit Review{% endif %}
+                            </button>
+                            
+                            <a href="{% url 'view_work_submission' job.id %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="card mt-4 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Writing a Good Review
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li>Be specific about what the freelancer did well</li>
+                        <li>Mention communication quality and responsiveness</li>
+                        <li>Comment on work quality and attention to detail</li>
+                        <li>Note if they met deadlines and project requirements</li>
+                        <li>Be constructive and professional</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+<br>
+{% endblock %}

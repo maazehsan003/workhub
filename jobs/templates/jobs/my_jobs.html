@@ -1,0 +1,765 @@
+{% extends "jobs/layout2.html" %}
+
+{% block title %}My Jobs - Work Hub{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs" id="jobTabs" role="tablist">
+        {% if user.profile.role == 'client' %}
+            <!-- Client Tabs -->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-jobs-tab" data-bs-toggle="tab" 
+                        data-bs-target="#all-jobs" type="button" role="tab">
+                    <i class="fas fa-briefcase"></i> All Jobs 
+                    <span class="badge bg-primary ms-1">{{ posted_jobs.count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pending-jobs-tab" data-bs-toggle="tab" 
+                        data-bs-target="#pending-jobs" type="button" role="tab">
+                    <i class="fas fa-clock"></i> Pending Jobs
+                    <span class="badge bg-warning ms-1">{{ pending_jobs.count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="completed-client-tab" data-bs-toggle="tab" 
+                        data-bs-target="#completed-client" type="button" role="tab">
+                    <i class="fas fa-check-circle"></i> Completed Jobs
+                    <span class="badge bg-success ms-1">{{ completed_client_jobs.count }}</span>
+                </button>
+            </li>
+        {% endif %}
+
+        {% if user.profile.role == 'freelancer' %}
+            <!-- Freelancer Tabs -->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-freelancer-jobs-tab" data-bs-toggle="tab" 
+                        data-bs-target="#all-freelancer-jobs" type="button" role="tab">
+                    <i class="fas fa-briefcase"></i> All Jobs 
+                    <span class="badge bg-primary ms-1">{% with total_jobs=assigned_jobs.count|add:completed_jobs.count %}{{ total_jobs }}{% endwith %}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="working-tab" data-bs-toggle="tab" 
+                        data-bs-target="#working" type="button" role="tab">
+                    <i class="fas fa-tools"></i> Jobs I'm Working On 
+                    <span class="badge bg-warning ms-1">{{ assigned_jobs.count }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="completed-tab" data-bs-toggle="tab" 
+                        data-bs-target="#completed" type="button" role="tab">
+                    <i class="fas fa-check-circle"></i> Completed Jobs
+                    <span class="badge bg-success ms-1">{{ completed_jobs.count }}</span>
+                </button>
+            </li>
+        {% endif %}
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="jobTabsContent">
+        
+        <!-- CLIENT TABS -->
+        {% if user.profile.role == 'client' %}
+            
+            <!-- All Jobs Tab (Client) -->
+            <div class="tab-pane fade show active" id="all-jobs" role="tabpanel">
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>All Your Posted Jobs</h5>
+                        <a href="{% url 'post_job' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Post New Job
+                        </a>
+                    </div>
+
+                    {% if posted_jobs %}
+                        {% for job in posted_jobs %}
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">{{ job.title }}</h6>
+                                        <small class="text-muted">Posted on {{ job.created_at|date:"M d, Y" }}</small>
+                                    </div>
+                                    <div>
+                                        {% if job.status == 'open' %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-door-open"></i> Open
+                                            </span>
+                                        {% elif job.status == 'in_progress' %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-cog fa-spin"></i> In Progress
+                                            </span>
+                                        {% elif job.status == 'under_review' %}
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-eye"></i> Under Review
+                                            </span>
+                                        {% elif job.status == 'completed' %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle"></i> Completed
+                                            </span>
+                                        {% elif job.status == 'cancelled' %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times-circle"></i> Cancelled
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <p class="text-muted mb-2">{{ job.description|truncatewords:30 }}</p>
+                                            <div class="mb-2">
+                                                <span class="badge bg-light text-dark me-2">
+                                                    <i class="fas fa-tag"></i> {{ job.get_category_display }}
+                                                </span>
+                                                <span class="badge bg-light text-dark me-2">
+                                                    <i class="fas fa-dollar-sign"></i> ${{ job.budget }}
+                                                </span>
+                                                <span class="badge bg-light text-dark">
+                                                    <i class="fas fa-calendar"></i> {{ job.deadline }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-2">
+                                                <strong>Applications:</strong> {{ job.applications.count }}
+                                            </div>
+                                            {% if job.freelancer %}
+                                                <div class="mb-2">
+                                                    <strong>Assigned to:</strong> {{ job.freelancer.username }}
+                                                </div>
+                                            {% endif %}
+                                            <div class="btn-group-vertical w-100" role="group">
+                                                <a href="{% url 'applications' %}" class="btn btn-sm btn-outline-primary mb-2">
+                                                    <i class="fas fa-eye"></i> View Applications
+                                                </a>
+                                                {% if job.status == 'under_review' or job.status == 'completed' %}
+                                                    <a href="{% url 'view_work_submission' job.id %}" class="btn btn-sm btn-primary mb-2">
+                                                        <i class="fas fa-eye"></i> View Work
+                                                    </a>
+                                                {% endif %}
+                                                {% if job.freelancer %}
+                                                    <a href="{% url 'start_conversation_with_user' job.freelancer.id %}" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-envelope"></i> Message {{ job.freelancer.username }}
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Jobs Posted Yet</h4>
+                            <p class="text-muted">Start by posting your first job to find talented freelancers.</p>
+                            <a href="{% url 'post_job' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Post Your First Job
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Pending Jobs Tab (Client) -->
+            <div class="tab-pane fade" id="pending-jobs" role="tabpanel">
+                <div class="mt-4">
+                    <h5>Pending Jobs</h5>
+                    <p class="text-muted">Jobs that are currently open for applications or in progress.</p>
+
+                    {% if pending_jobs %}
+                        {% for job in pending_jobs %}
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">{{ job.title }}</h6>
+                                        <small class="text-muted">Posted on {{ job.created_at|date:"M d, Y" }}</small>
+                                    </div>
+                                    <div>
+                                        {% if job.status == 'open' %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-door-open"></i> Open for Applications
+                                            </span>
+                                        {% elif job.status == 'in_progress' %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-cog fa-spin"></i> In Progress
+                                            </span>
+                                        {% elif job.status == 'under_review' %}
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-eye"></i> Under Review
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <p class="text-muted mb-2">{{ job.description|truncatewords:30 }}</p>
+                                            <div class="mb-2">
+                                                <span class="badge bg-light text-dark me-2">
+                                                    <i class="fas fa-tag"></i> {{ job.get_category_display }}
+                                                </span>
+                                                <span class="badge bg-light text-dark me-2">
+                                                    <i class="fas fa-dollar-sign"></i> ${{ job.budget }}
+                                                </span>
+                                                <span class="badge bg-light text-dark">
+                                                    <i class="fas fa-calendar"></i> {{ job.deadline }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            {% if job.status == 'open' %}
+                                                <div class="mb-2">
+                                                    <strong>Applications:</strong> {{ job.applications.count }}
+                                                </div>
+                                                <div class="alert alert-info py-2 px-3">
+                                                    <i class="fas fa-users"></i>
+                                                    <strong>Accepting Applications</strong>
+                                                </div>
+                                            {% elif job.status == 'in_progress' %}
+                                                <div class="mb-2">
+                                                    <strong>Assigned to:</strong> {{ job.freelancer.username }}
+                                                </div>
+                                                <div class="alert alert-warning py-2 px-3">
+                                                    <i class="fas fa-tools"></i>
+                                                    <strong>Work in Progress</strong>
+                                                </div>
+                                            {% elif job.status == 'under_review' %}
+                                                <div class="mb-2">
+                                                    <strong>Freelancer:</strong> {{ job.freelancer.username }}
+                                                </div>
+                                                <div class="alert alert-primary py-2 px-3">
+                                                    <i class="fas fa-eye"></i>
+                                                    <strong>Work Submitted</strong>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="btn-group-vertical w-100" role="group">
+                                                {% if job.status == 'open' %}
+                                                    <a href="{% url 'applications' %}" class="btn btn-sm btn-primary mb-2">
+                                                        <i class="fas fa-eye"></i> View Applications
+                                                    </a>
+                                                {% elif job.status == 'under_review' %}
+                                                    <a href="{% url 'view_work_submission' job.id %}" class="btn btn-sm btn-primary mb-2">
+                                                        <i class="fas fa-eye"></i> Review Work
+                                                    </a>
+                                                {% endif %}
+                                                {% if job.freelancer %}
+                                                    <a href="{% url 'start_conversation_with_user' job.freelancer.id %}" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-envelope"></i> Message {{ job.freelancer.username }}
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Pending Jobs</h4>
+                            <p class="text-muted">All your posted jobs have been completed or cancelled.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Completed Jobs Tab (Client) -->
+            <div class="tab-pane fade" id="completed-client" role="tabpanel">
+                <div class="mt-4">
+                    <h5>Completed Jobs</h5>
+                    <p class="text-muted">Successfully completed projects with delivered work.</p>
+
+                    {% if completed_client_jobs %}
+                        {% for job in completed_client_jobs %}
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">{{ job.title }}</h6>
+                                        <small class="text-muted">Completed by {{ job.freelancer.username|default:"Freelancer" }}</small>
+                                    </div>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle"></i> Completed & Paid
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            {% if job.work_submission %}
+                                                <p class="mb-2"><strong>Work Description:</strong></p>
+                                                <p class="text-muted">{{ job.work_submission.description|truncatewords:20 }}</p>
+                                                <div class="mb-2">
+                                                    <span class="badge bg-light text-dark me-2">
+                                                        <i class="fas fa-paperclip"></i> {{ job.work_submission.get_files_count }} files
+                                                    </span>
+                                                    <span class="badge bg-light text-dark me-2">
+                                                        <i class="fas fa-clock"></i> Completed {{ job.work_submission.submitted_at|date:"M d, Y" }}
+                                                    </span>
+                                                    <span class="badge bg-success text-white">
+                                                        <i class="fas fa-dollar-sign"></i> ${{ job.budget }} Paid
+                                                    </span>
+                                                </div>
+                                            {% else %}
+                                                <p class="text-muted mb-2">{{ job.description|truncatewords:30 }}</p>
+                                                <div class="mb-2">
+                                                    <span class="badge bg-light text-dark me-2">
+                                                        <i class="fas fa-tag"></i> {{ job.get_category_display }}
+                                                    </span>
+                                                    <span class="badge bg-light text-dark me-2">
+                                                        <i class="fas fa-dollar-sign"></i> ${{ job.budget }}
+                                                    </span>
+                                                    <span class="badge bg-light text-dark">
+                                                        <i class="fas fa-calendar"></i> Completed: {{ job.updated_at|date:"M d, Y" }}
+                                                    </span>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="alert alert-success py-2 px-3 mt-2">
+                                                <i class="fas fa-check-circle"></i>
+                                                <strong>Project Completed!</strong><br>
+                                                <small>Payment of ${{ job.budget }} released to {{ job.freelancer.username|default:"Freelancer" }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="d-grid gap-2">
+                                                {% if job.work_submission %}
+                                                    <a href="{% url 'view_work_submission' job.id %}" class="btn btn-primary">
+                                                        <i class="fas fa-eye"></i> View Delivered Work
+                                                    </a>
+                                                {% endif %}
+                                                
+                                                {% if job.freelancer %}
+                                                    <a href="{% url 'start_conversation_with_user' job.freelancer.id %}" class="btn btn-success">
+                                                        <i class="fas fa-envelope"></i> Message {{ job.freelancer.username }}
+                                                    </a>
+                                                {% endif %}
+                                                
+                                                <div class="text-center">
+                                                    <small class="text-success">
+                                                        <i class="fas fa-shield-alt"></i> Transaction Complete
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-clipboard-check fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Completed Jobs</h4>
+                            <p class="text-muted">Completed projects will appear here once freelancers deliver their work.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        {% endif %}
+
+        <!-- FREELANCER TABS -->
+        {% if user.profile.role == 'freelancer' %}
+            
+            <!-- All Jobs Tab (Freelancer) -->
+            <div class="tab-pane fade show active" id="all-freelancer-jobs" role="tabpanel">
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>All Your Jobs</h5>
+                        <a href="{% url 'job_list' %}" class="btn btn-success">
+                            <i class="fas fa-search"></i> Find More Jobs
+                        </a>
+                    </div>
+
+                    {% if assigned_jobs or completed_jobs %}
+                        <!-- Working Jobs -->
+                        {% for job in assigned_jobs %}
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">{{ job.title }}</h6>
+                                        <small class="text-muted">Client: {{ job.client.username }}</small>
+                                    </div>
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-cog fa-spin"></i> In Progress
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <p class="text-muted mb-2">{{ job.description|truncatewords:30 }}</p>
+                                            <div class="mb-2">
+                                                <span class="badge bg-light text-dark me-2">
+                                                    <i class="fas fa-tag"></i> {{ job.get_category_display }}
+                                                </span>
+                                                <span class="badge bg-light text-dark me-2">
+                                                    <i class="fas fa-dollar-sign"></i> ${{ job.budget }}
+                                                </span>
+                                                <span class="badge bg-light text-dark">
+                                                    <i class="fas fa-calendar"></i> Due: {{ job.deadline }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="d-grid gap-2">
+                                                <button type="button" class="btn btn-primary btn-sm" 
+                                                        onclick="openSubmitWorkModal('{{ job.id }}', '{{ job.title|escapejs }}')"
+                                                        data-job-title="{{ job.title }}">
+                                                    <i class="fas fa-upload"></i> Submit Work
+                                                </button>
+                                                <a href="{% url 'start_conversation_with_user' job.client.id %}" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-envelope"></i> Message {{ job.client.username }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        <!-- Completed Jobs -->
+                        {% for job in completed_jobs %}
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">{{ job.title }}</h6>
+                                        <small class="text-muted">Client: {{ job.client.username }}</small>
+                                    </div>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle"></i> Completed
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <p class="text-muted mb-2">{{ job.description|truncatewords:30 }}</p>
+                                            <div class="mb-2">
+                                                <span class="badge bg-light text-dark me-2">
+                                                    <i class="fas fa-tag"></i> {{ job.get_category_display }}
+                                                </span>
+                                                <span class="badge bg-light text-dark me-2">
+                                                    <i class="fas fa-dollar-sign"></i> ${{ job.budget }}
+                                                </span>
+                                                <span class="badge bg-light text-dark">
+                                                    <i class="fas fa-calendar"></i> Completed: {{ job.updated_at|date:"M d, Y" }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="text-success mb-2">
+                                                <i class="fas fa-trophy"></i> Project successfully delivered
+                                            </div>
+                                            <div class="d-grid gap-2">
+                                                {% if job.work_submission %}
+                                                    <a href="{% url 'view_work_submission' job.id %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i> View Submission
+                                                    </a>
+                                                {% endif %}
+                                                <a href="{% url 'start_conversation_with_user' job.client.id %}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-envelope"></i> Message {{ job.client.username }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Jobs Yet</h4>
+                            <p class="text-muted">Start applying to jobs to begin your freelancing journey.</p>
+                            <a href="{% url 'job_list' %}" class="btn btn-success">
+                                <i class="fas fa-search"></i> Browse Available Jobs
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Jobs Working On Tab (Freelancer) -->
+            <div class="tab-pane fade" id="working" role="tabpanel">
+                <div class="mt-4">
+                    <h5>Jobs You're Working On</h5>
+                    <p class="text-muted">Active projects where you're currently working.</p>
+
+                    {% if assigned_jobs %}
+                        {% for job in assigned_jobs %}
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">{{ job.title }}</h6>
+                                        <small class="text-muted">Client: {{ job.client.username }}</small>
+                                    </div>
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-cog fa-spin"></i> In Progress
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <p class="text-muted mb-2">{{ job.description|truncatewords:30 }}</p>
+                                            <div class="mb-2">
+                                                <span class="badge bg-light text-dark me-2">
+                                                    <i class="fas fa-tag"></i> {{ job.get_category_display }}
+                                                </span>
+                                                <span class="badge bg-light text-dark me-2">
+                                                    <i class="fas fa-dollar-sign"></i> ${{ job.budget }}
+                                                </span>
+                                                <span class="badge bg-light text-dark">
+                                                    <i class="fas fa-calendar"></i> Due: {{ job.deadline }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-2">
+                                                <strong>Started:</strong> {{ job.updated_at|date:"M d, Y" }}
+                                            </div>
+                                            {% if job.deadline %}
+                                                {% now "Y-m-d" as today %}
+                                                {% if job.deadline|date:"Y-m-d" < today %}
+                                                    <div class="alert alert-warning py-1 px-2">
+                                                        <small><i class="fas fa-exclamation-triangle"></i> Overdue</small>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="text-success">
+                                                        <small><i class="fas fa-clock"></i> On time</small>
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <div class="progress mb-2" style="height: 8px;">
+                                            <div class="progress-bar bg-warning" role="progressbar" 
+                                                 style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center gap-2">
+                                            <small class="text-muted">Ready to submit your work?</small>
+                                            <div class="d-flex gap-2">
+                                                <button type="button" class="btn btn-primary btn-sm" 
+                                                        onclick="openSubmitWorkModal('{{ job.id }}', '{{ job.title|escapejs }}')"
+                                                        data-job-title="{{ job.title }}">
+                                                    <i class="fas fa-upload"></i> Submit Work
+                                                </button>
+                                                <a href="{% url 'start_conversation_with_user' job.client.id %}" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-envelope"></i> Message {{ job.client.username }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-tools fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Active Projects</h4>
+                            <p class="text-muted">Apply to jobs to start working on exciting projects.</p>
+                            <a href="{% url 'job_list' %}" class="btn btn-success">
+                                <i class="fas fa-search"></i> Find Jobs to Apply
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Completed Jobs Tab (Freelancer) -->
+            <div class="tab-pane fade" id="completed" role="tabpanel">
+                <div class="mt-4">
+                    <h5>Completed Jobs</h5>
+                    <p class="text-muted">Successfully completed projects and delivered work.</p>
+
+                    {% if completed_jobs %}
+                        {% for job in completed_jobs %}
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">{{ job.title }}</h6>
+                                        <small class="text-muted">Client: {{ job.client.username }}</small>
+                                    </div>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle"></i> Completed
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <p class="text-muted mb-2">{{ job.description|truncatewords:30 }}</p>
+                                            <div class="mb-2">
+                                                <span class="badge bg-light text-dark me-2">
+                                                    <i class="fas fa-tag"></i> {{ job.get_category_display }}
+                                                </span>
+                                                <span class="badge bg-light text-dark me-2">
+                                                    <i class="fas fa-dollar-sign"></i> ${{ job.budget }}
+                                                </span>
+                                                <span class="badge bg-light text-dark">
+                                                    <i class="fas fa-calendar"></i> Completed: {{ job.updated_at|date:"M d, Y" }}
+                                                </span>
+                                            </div>
+                                            
+                                            <div class="alert alert-success py-2 px-3 mt-2">
+                                                <i class="fas fa-trophy"></i>
+                                                <strong>Project Successfully Delivered!</strong><br>
+                                                <small>Payment of ${{ job.budget }} received</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-2">
+                                                <strong>Completed:</strong> {{ job.updated_at|date:"M d, Y" }}
+                                            </div>
+                                            <div class="text-success mb-2">
+                                                <i class="fas fa-check-double"></i> Successfully delivered
+                                            </div>
+                                            <div class="d-grid gap-2">
+                                                {% if job.work_submission %}
+                                                    <a href="{% url 'view_work_submission' job.id %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i> View Submission Details
+                                                    </a>
+                                                {% endif %}
+                                                <a href="{% url 'start_conversation_with_user' job.client.id %}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-envelope"></i> Message {{ job.client.username }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Completed Jobs</h4>
+                            <p class="text-muted">Your completed projects will appear here once you finish and deliver them.</p>
+                            <a href="{% url 'job_list' %}" class="btn btn-success">
+                                <i class="fas fa-search"></i> Find Jobs to Apply
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Work Submission Modal -->
+<div class="modal fade" id="submitWorkModal" tabindex="-1" aria-labelledby="submitWorkModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title" id="submitWorkModalLabel">
+                    <i class="fas fa-upload"></i> Submit Completed Work
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form id="workSubmissionForm" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-trophy text-warning" style="font-size: 3rem;"></i>
+                        <h6 class="mt-2">Submit work for "<span id="modalJobTitle"></span>"</h6>
+                    </div>
+                    
+                    <!-- Work Description -->
+                    <div class="mb-4">
+                        <label for="workDescription" class="form-label">
+                            <i class="fas fa-file-text"></i> Work Description <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" id="workDescription" name="work_description" 
+                                  rows="5" required placeholder="Describe what you've delivered, key features implemented, or any important notes for the client..."></textarea>
+                        <div class="form-text">Provide a detailed description of your completed work</div>
+                    </div>
+                    
+                    <!-- File Attachments -->
+                    <div class="mb-4">
+                        <label for="workFiles" class="form-label">
+                            <i class="fas fa-paperclip"></i> Attach Files
+                        </label>
+                        <div class="file-upload-area">
+                            <input type="file" class="form-control" id="workFiles" name="work_files" 
+                                   multiple accept=".zip,.rar,.pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.mp4,.avi">
+                            <div class="form-text">
+                                Upload your completed work files, documents, images, or videos. 
+                                <strong>Max size:</strong> 50MB per file. 
+                                <strong>Allowed formats:</strong> ZIP, RAR, PDF, DOC, DOCX, TXT, images, videos
+                            </div>
+                        </div>
+                        
+                        <!-- File Preview Area -->
+                        <div id="filePreview" class="mt-3" style="display: none;">
+                            <h6><i class="fas fa-eye"></i> Selected Files:</h6>
+                            <div id="fileList" class="file-list"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Notes -->
+                    <div class="mb-4">
+                        <label for="additionalNotes" class="form-label">
+                            <i class="fas fa-sticky-note"></i> Additional Notes
+                        </label>
+                        <textarea class="form-control" id="additionalNotes" name="additional_notes" 
+                                  rows="3" placeholder="Any additional comments, instructions for the client, or follow-up requirements..."></textarea>
+                    </div>
+                    
+                    <!-- Submission Info -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>What happens after submission:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Your work will be automatically approved and the job completed</li>
+                            <li>Payment will be immediately released to your wallet</li>
+                            <li>The client will be notified of the completion</li>
+                            <li>You can view your submission details anytime</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Terms Agreement -->
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                        <label class="form-check-label" for="agreeTerms">
+                            I confirm that this work is complete and meets the project requirements
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success" id="submitWorkBtn">
+                        <i class="fas fa-upload"></i> Submit Work
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Ensure the JavaScript functions are available
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab persistence
+    const tabTriggerList = [].slice.call(document.querySelectorAll('#jobTabs button'))
+    tabTriggerList.forEach(function (tabTriggerEl) {
+        tabTriggerEl.addEventListener('click', function (event) {
+            localStorage.setItem('activeJobTab', event.target.getAttribute('data-bs-target'))
+        })
+    })
+    
+    // Restore active tab
+    const activeTab = localStorage.getItem('activeJobTab')
+    if (activeTab) {
+        const tabTrigger = document.querySelector(`#jobTabs button[data-bs-target="${activeTab}"]`)
+        if (tabTrigger) {
+            const tab = new bootstrap.Tab(tabTrigger)
+            tab.show()
+        }
+    }
+})
+</script>
+{% endblock %}

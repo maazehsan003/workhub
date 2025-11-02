@@ -1,0 +1,253 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block title %}Work Hub{% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% csrf_token %}
+        <meta name="csrf-token" content="{{ csrf_token }}">
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+      <link href="{% static 'messaging/messaging.css' %}" rel="stylesheet">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </head>
+    <body>
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="{% url 'job_list' %}">
+                <i class="fas fa-briefcase"></i> Work Hub
+            </a>
+          
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard' %}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'inbox' %}">
+                                <i class="fas fa-envelope"></i> Messages
+                            </a>
+                        </li>
+                        {% if user.profile.role == 'freelancer' %}                                                
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'job_list' %}">
+                                <i class="fas fa-list"></i> Browse Jobs
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if user.profile.role == 'client' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'post_job' %}">
+                                    <i class="fas fa-plus-circle"></i> Post Job
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'applications' %}">
+                                <i class="fas fa-file-alt"></i> Applications
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'my_jobs' %}">
+                                <i class="fas fa-tasks"></i> My Jobs
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user"></i> {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{% url 'dashboard' %}">
+                                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'my_jobs' %}">
+                                    <i class="fas fa-tasks"></i> My Jobs
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'applications' %}">
+                                    <i class="fas fa-file-alt"></i> Applications
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                    <i class="fas fa-sign-out-alt"></i> Log Out
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt"></i> Log In
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">
+                                <i class="fas fa-user-plus"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+        
+        <div class="body">
+<div class="container mt-4">
+    <div class="messaging-container">
+        <!-- Conversation Header -->
+        <div class="messaging-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <a href="{% url 'inbox' %}" class="btn btn-link text-decoration-none me-3">
+                        <i class="fas fa-arrow-left"></i> Back to Inbox
+                    </a>
+                    <div>
+                        {% if other_participant.profile.role == 'freelancer' %}
+                        <h4 class="mb-0">
+                            <i class="fas fa-user-circle"></i>
+                            <a href="{% url 'reviews:freelancer_reviews' other_participant.username %}" class="text-decoration-none" style="color: white;"> 
+                                {{ other_participant.username }}
+                            </a>
+                        </h4>
+                        {% else %}
+                        <h4 class="mb-0">
+                            <i class="fas fa-user-circle"></i> 
+                            {{ other_participant.username }}
+                        </h4>
+                        {% endif %}
+                            <small class="text-muted">Chat</small>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="messages-wrapper" id="messages-wrapper">
+            <div class="messages-container" id="messages-container">
+                {% for message in messages reversed %}
+                <div class="message-item {% if message.sender == user %}sent{% else %}received{% endif %}" 
+                     data-message-id="{{ message.id }}">
+                    <div class="message-bubble">
+                        <div class="message-header">
+                            <span class="message-sender-name">
+                                {% if message.sender == user %}You{% else %}{{ message.sender.username }}{% endif %}
+                            </span>
+                            <span class="message-timestamp">{{ message.created_at|date:"M d, Y g:i A" }}</span>
+                        </div>
+                        <div class="message-body">
+                            {{ message.content }}
+                        </div>
+                        {% if message.attachment %}
+                        <div class="message-attachment">
+                            <a href="{{ message.attachment.url }}" target="_blank" class="attachment-link">
+                                <i class="fas fa-paperclip"></i> {{ message.get_attachment_name }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% if message.sender == user %}
+                        <div class="message-status">
+                            {% if message.is_read %}
+                                <i class="fas fa-check-double text-primary"></i> Read
+                            {% else %}
+                                <i class="fas fa-check"></i> Sent
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typing-indicator" style="display: none;">
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span class="typing-text">{{ other_participant.username }} is typing...</span>
+            </div>
+        </div>
+
+        <!-- Message Input Form -->
+        <div class="message-input-wrapper">
+            <form method="post" enctype="multipart/form-data" id="message-form" class="message-form">
+                {% csrf_token %}
+                <div class="input-group">
+                    <label for="attachment-input" class="btn btn-outline-secondary attachment-btn">
+                        <i class="fas fa-paperclip"></i>
+                        <input type="file" id="attachment-input" name="attachment" style="display: none;">
+                    </label>
+                    <textarea 
+                        name="content" 
+                        id="message-input" 
+                        class="form-control message-textarea" 
+                        placeholder="Type your message..." 
+                        rows="1"
+                        required></textarea>
+                    <button type="submit" class="btn btn-primary send-btn" id="send-btn">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                </div>
+                <div id="attachment-preview" class="attachment-preview"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Conversation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this conversation? This will only remove it from your view.</p>
+                <p class="text-muted"><small>Note: The other participant will still be able to see the conversation and can continue messaging you.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'delete_conversation' conversation.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'messaging/messaging.js' %}"></script>
+<script>
+    if (typeof MessagingApp !== 'undefined') {
+        MessagingApp.init({
+            conversationId: "{{ conversation.id }}",
+            currentPage: "conversation",
+            checkNewMessagesUrl: "{% url 'conversation_detail' conversation.id %}",
+            unreadCountUrl: "{% url 'unread_count' %}"
+        });
+    }
+</script>
+        
+            <script src="{% static 'messaging/messaging.js' %}"></script>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

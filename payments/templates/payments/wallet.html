@@ -1,0 +1,276 @@
+{% extends "payments/layout3.html" %}
+{% load static %}
+
+{% block title %}My Wallet - Work Hub{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="wallet-header mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; text-align: center;">
+        <h1><i class="fas fa-wallet"></i> My Wallet</h1>
+        <div class="balance" style="font-size: 3em; font-weight: bold; margin: 10px 0;">${{ wallet.balance }}</div>
+        <p>Available Balance</p>
+    </div>
+
+    <div class="row">
+        <!-- Client: Top Up and Quick Actions -->
+        {% if user.profile.role == 'client' %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-credit-card"></i> Add Funds to Wallet</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'payments:top_up_wallet' %}">
+                        {% csrf_token %}
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" name="amount" placeholder="Enter amount" 
+                                   min="1" max="10000" step="0.01" required>
+                            <button type="submit" class="btn btn-primary">Add Funds</button>
+                        </div>
+                    </form>
+                    <small class="text-muted">Add funds to your wallet (simulation)</small>
+                    
+                    <hr>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'payments:payment_history' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-history"></i> View Payment History
+                        </a>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-success">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Freelancer: Withdraw and Quick Actions -->
+        {% if user.profile.role == 'freelancer' %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-money-bill-wave"></i> Withdraw Funds</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'payments:withdraw_funds' %}">
+                        {% csrf_token %}
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" name="amount" placeholder="Enter amount" 
+                                   min="1" max="{{ wallet.balance }}" step="0.01" required>
+                            <button type="submit" class="btn btn-success">Withdraw</button>
+                        </div>
+                    </form>
+                    <small class="text-muted">Withdraw funds from your wallet (simulation)</small>
+                    
+                    <hr>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'payments:payment_history' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-history"></i> View Payment History
+                        </a>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-success">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Wallet Stats -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line"></i> Wallet Overview</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.profile.role == 'freelancer' %}
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border rounded p-3 mb-2">
+                                    <h4 class="text-success">${{ total_earnings|default:0 }}</h4>
+                                    <small class="text-muted">Total Earned</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="border rounded p-3 mb-2">
+                                    <h4 class="text-warning">${{ pending_earnings|default:0 }}</h4>
+                                    <small class="text-muted">Pending</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Note:</strong> As a freelancer, you can only withdraw funds from your wallet. Funds are added when you complete jobs.
+                        </div>
+                    {% else %}
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border rounded p-3 mb-2">
+                                    <h4 class="text-primary">${{ total_spent|default:0 }}</h4>
+                                    <small class="text-muted">Total Spent</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="border rounded p-3 mb-2">
+                                    <h4 class="text-warning">${{ pending_payments|default:0 }}</h4>
+                                    <small class="text-muted">On Hold</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% if wallet.balance < 50 %}
+                            <div class="alert alert-warning mt-3">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Low Balance!</strong> Consider topping up your wallet to accept more applications.
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Payments -->
+    {% if pending_payments_sent or pending_payments_received %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5><i class="fas fa-clock"></i> Payments On Hold</h5>
+        </div>
+        <div class="card-body">
+            {% if pending_payments_sent %}
+                <h6 class="text-primary">Payments Sent (On Hold)</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Job</th>
+                                <th>To</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in pending_payments_sent %}
+                            <tr>
+                                <td>{{ payment.job.title|truncatechars:30 }}</td>
+                                <td>{{ payment.to_user.username }}</td>
+                                <td><span class="text-danger">-${{ payment.amount }}</span></td>
+                                <td><span class="badge bg-warning">{{ payment.get_status_display }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+
+            {% if pending_payments_received %}
+                <h6 class="text-success mt-3">Payments to Receive</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Job</th>
+                                <th>From</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in pending_payments_received %}
+                            <tr>
+                                <td>{{ payment.job.title|truncatechars:30 }}</td>
+                                <td>{{ payment.from_user.username }}</td>
+                                <td><span class="text-success">+${{ payment.amount }}</span></td>
+                                <td><span class="badge bg-warning">{{ payment.get_status_display }}</span></td>
+                                <td>
+                                    {% if payment.job.status == 'completed' %}
+                                        <button 
+                                            class="btn btn-sm btn-success release-payment-btn" 
+                                            data-job-id="{{ payment.job.id }}">
+                                            <i class="fas fa-check"></i> Claim
+                                        </button>
+                                    {% else %}
+                                        <small class="text-muted">Complete job first</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Transactions -->
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-list"></i> Recent Transactions</h5>
+        </div>
+        <div class="card-body">
+            {% if transactions %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                            <tr>
+                                <td><small>{{ transaction.created_at|date:"M d, Y H:i" }}</small></td>
+                                <td>{{ transaction.description }}</td>
+                                <td>
+                                    <span class="{% if transaction.transaction_type == 'credit' %}text-success{% else %}text-danger{% endif %}">
+                                        {% if transaction.transaction_type == 'credit' %}+{% else %}-{% endif %}${{ transaction.amount }}
+                                    </span>
+                                </td>
+                                <td><small>${{ transaction.balance_after }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'payments:payment_history' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-history"></i> View Full History
+                    </a>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Transactions Yet</h5>
+                    <p class="text-muted">Your transaction history will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="releasePaymentUrl" value="{% url 'payments:release_payment' %}">
+
+<script>
+// Update the JavaScript for payment release
+document.addEventListener('DOMContentLoaded', function() {
+    const releaseButtons = document.querySelectorAll('.release-payment-btn');
+    
+    releaseButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const jobId = this.getAttribute('data-job-id');
+            releasePayment(jobId);
+        });
+    });
+});
+</script>
+
+<script src="{% static 'payments/payments.js' %}"></script>
+{% endblock %}

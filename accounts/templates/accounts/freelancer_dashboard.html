@@ -1,0 +1,243 @@
+{% extends "accounts/layout1.html" %}
+{% block body %}
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8">
+      <h2>Welcome back, {{ freelancer_profile.first_name }}!</h2>
+      
+      <!-- Wallet Section for Freelancers -->
+      <div class="card mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h5><i class="fas fa-wallet"></i> My Wallet</h5>
+              <div style="font-size: 2em; font-weight: bold;">${{ wallet.balance }}</div>
+              <small>Available Balance</small>
+              
+              {% if pending_earnings > 0 %}
+                <div class="mt-2 p-2" style="background: rgba(255,255,255,0.1); border-radius: 5px;">
+                  <strong><i class="fas fa-clock"></i> Pending Earnings: ${{ pending_earnings }}</strong>
+                  <br><small>Complete your jobs to claim these payments</small>
+                </div>
+              {% endif %}
+              
+              <div class="row mt-3 small">
+                <div class="col-6">
+                  <strong>Total Earned:</strong> ${{ total_earnings }}
+                </div>
+                <div class="col-6">
+                  <strong>Jobs Completed:</strong> {{ completed_jobs }}
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 text-center">
+              <a href="{% url 'payments:wallet' %}" class="btn btn-light btn-lg mb-2">
+                <i class="fas fa-cog"></i> Manage Wallet
+              </a>
+              <br>
+              <a href="{% url 'payments:payment_history' %}" class="btn btn-outline-light">
+                <i class="fas fa-history"></i> Payment History
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h4><i class="fas fa-user-tie"></i> Your Freelancer Profile</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="mb-3">
+                <h5 class="text-primary">{{ freelancer_profile.title }}</h5>
+              </div>
+              <div class="mb-3">
+                <strong><i class="fas fa-user"></i> Name:</strong> 
+                {{ freelancer_profile.first_name }} {{ freelancer_profile.last_name }}
+              </div>
+              <div class="mb-3">
+                <strong><i class="fas fa-info-circle"></i> Bio:</strong> 
+                <p class="mb-2">{{ freelancer_profile.bio }}</p>
+              </div>
+              <div class="mb-3">
+                <strong><i class="fas fa-tools"></i> Skills:</strong>
+                <div class="mt-2">
+                  {% for skill in skills_list %}
+                    <span class="badge bg-primary me-1 mb-1">{{ skill|title }}</span>
+                  {% empty %}
+                    <span class="text-muted">No skills listed</span>
+                  {% endfor %}
+                </div>
+              </div>
+              {% if freelancer_profile.phone_number %}
+                <div class="mb-3">
+                  <strong><i class="fas fa-phone"></i> Phone:</strong> 
+                  {{ freelancer_profile.phone_number }}
+                </div>
+              {% endif %}
+              <div class="mb-3">
+                <strong><i class="fas fa-dollar-sign"></i> Hourly Rate:</strong> 
+                <span class="badge bg-success fs-6">${{ freelancer_profile.hourly_rate }}/hour</span>
+              </div>
+              <div class="mb-3">
+                <strong><i class="fas fa-envelope"></i> Email:</strong> 
+                {{ user.email }}
+              </div>
+              <div class="mb-3">
+                <strong><i class="fas fa-calendar"></i> Member since:</strong> 
+                {{ user.date_joined|date:"M Y" }}
+              </div>
+            </div>
+            <div class="col-md-4 text-center">
+              {% if freelancer_profile.profile_picture %}
+                <img src="{{ freelancer_profile.profile_picture.url }}" alt="Profile" 
+                     class="img-thumbnail rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+              {% else %}
+                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center mb-3" 
+                     style="width: 150px; height: 150px; margin: 0 auto;">
+                  <i class="fas fa-user fa-3x text-white"></i>
+                </div>
+              {% endif %}
+              <div class="text-muted">
+                <small>Freelancer Profile</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="row mt-4">
+        <div class="col-md-4">
+          <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+              <i class="fas fa-paper-plane fa-2x mb-2"></i>
+              <h5>Applications</h5>
+              <h3>{{ total_applications|default:0 }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card bg-success text-white">
+            <div class="card-body text-center">
+              <i class="fas fa-check-circle fa-2x mb-2"></i>
+              <h5>Completed</h5>
+              <h3>{{ completed_jobs|default:0 }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+              <i class="fas fa-cog fa-2x mb-2"></i>
+              <h5>In Progress</h5>
+              <h3>{{ in_progress_jobs|default:0 }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Status Alerts -->
+      {% if pending_earnings > 0 %}
+      <div class="alert alert-warning mt-4">
+        <i class="fas fa-coins"></i>
+        <strong>You have payments ready to claim!</strong><br>
+        Complete your jobs and visit your <a href="{% url 'payments:wallet' %}" class="alert-link">wallet</a> to claim ${{ pending_earnings }} in pending payments.
+      </div>
+      {% endif %}
+    </div>
+    <br>
+    
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5><i class="fas fa-rocket"></i> Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <a href="{% url 'payments:wallet' %}" class="btn btn-outline-primary mb-2 d-block">
+            <i class="fas fa-wallet"></i> Manage Wallet
+          </a>
+          <a href="{% url 'edit_profile' %}" class="btn btn-outline-secondary mb-2 d-block">
+            <i class="fas fa-user-edit"></i> Edit Profile
+          </a>
+          <a href="{% url 'job_list' %}" class="btn btn-success mb-2 d-block">
+            <i class="fas fa-search"></i> Find Jobs
+          </a>
+          <a href="{% url 'applications' %}" class="btn btn-info mb-2 d-block">
+            <i class="fas fa-file-alt"></i> My Applications
+          </a>
+    <a href="{% url 'my_jobs' %}" class="btn btn-warning mb-2 d-block">
+            <i class="fas fa-tasks"></i> My Jobs
+          </a>
+          <a href="{% url 'reviews:my_reviews' %}" class="btn btn-outline-info mb-2 d-block">
+            <i class="fas fa-star"></i> My Reviews
+          </a>
+          <a href="{% url 'reviews:freelancer_reviews' user.username %}" class="btn btn-outline-secondary mb-2 d-block">
+            <i class="fas fa-user-circle"></i> Public Profile
+          </a>
+          <a href="{% url 'payments:payment_history' %}" class="btn btn-outline-dark mb-2 d-block">
+            <i class="fas fa-history"></i> Payment History
+          </a>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h6><i class="fas fa-clock"></i> Recent Activity</h6>
+        </div>
+        <div class="card-body">
+          {% if user.application_set.all %}
+            {% for application in user.application_set.all|slice:":3" %}
+              <div class="d-flex align-items-center mb-2">
+                <div class="me-3">
+                  {% if application.status == 'pending' %}
+                    <i class="fas fa-circle text-warning"></i>
+                  {% elif application.status == 'accepted' %}
+                    <i class="fas fa-circle text-success"></i>
+                  {% elif application.status == 'declined' %}
+                    <i class="fas fa-circle text-danger"></i>
+                  {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                  <small class="fw-bold">{{ application.job.title|truncatechars:25 }}</small>
+                  <br>
+                  <small class="text-muted">{{ application.applied_at|date:"M d" }} - {{ application.get_status_display }}</small>
+                </div>
+              </div>
+            {% endfor %}
+            <div class="text-center mt-3">
+              <a href="{% url 'applications' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+          {% else %}
+            <div class="text-center text-muted py-3">
+              <i class="fas fa-info-circle"></i>
+              <p class="mb-0">No applications yet</p>
+              <small>Start applying to jobs!</small>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Featured Jobs -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h6><i class="fas fa-star"></i> Jobs for You</h6>
+        </div>
+        <div class="card-body">
+          <div class="text-center">
+            <p class="text-muted mb-3">Find projects that match your skills</p>
+            <a href="{% url 'job_list' %}" class="btn btn-primary btn-sm">
+              <i class="fas fa-search"></i> Browse All Jobs
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

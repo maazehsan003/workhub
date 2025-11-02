@@ -1,0 +1,231 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block title %}Work Hub{% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% csrf_token %}
+        <meta name="csrf-token" content="{{ csrf_token }}">
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+      <link href="{% static 'jobs/jobs.css' %}" rel="stylesheet">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </head>
+    <body>
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="{% url 'job_list' %}">
+                <i class="fas fa-briefcase"></i> Work Hub
+            </a>
+          
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard' %}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'inbox' %}">
+                                <i class="fas fa-envelope"></i> Messages
+                            </a>
+                        </li>
+                        {% if user.profile.role == 'freelancer' %}                                                
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'job_list' %}">
+                                <i class="fas fa-list"></i> Browse Jobs
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if user.profile.role == 'client' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'post_job' %}">
+                                    <i class="fas fa-plus-circle"></i> Post Job
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'applications' %}">
+                                <i class="fas fa-file-alt"></i> Applications
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'my_jobs' %}">
+                                <i class="fas fa-tasks"></i> My Jobs
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user"></i> {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{% url 'dashboard' %}">
+                                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'my_jobs' %}">
+                                    <i class="fas fa-tasks"></i> My Jobs
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'applications' %}">
+                                    <i class="fas fa-file-alt"></i> Applications
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                    <i class="fas fa-sign-out-alt"></i> Log Out
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt"></i> Log In
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">
+                                <i class="fas fa-user-plus"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+        
+        <!-- Professional Toast Notifications Container -->
+        <div class="toast-container" id="toastContainer"></div>
+        
+        <!-- Fallback Alert Messages (hidden by default) -->
+        <div style="display: none;" id="django-messages">
+            {% if messages %}
+                {% for message in messages %}
+                    <div data-message-type="{{ message.tags }}" data-message-text="{{ message }}"></div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        
+        <div class="body">
+            {% block body %}
+            {% endblock %}
+            <script src="{% static 'jobs/jobs.js' %}"></script>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <script>
+        // Professional Toast Notification System
+        class ProfessionalToast {
+            constructor(container) {
+                this.container = container || document.getElementById('toastContainer');
+            }
+            
+            show(type, title, message, duration = 5000) {
+                const toastId = 'toast-' + Date.now();
+                const icons = {
+                    'success': 'fas fa-check-circle',
+                    'info': 'fas fa-info-circle', 
+                    'warning': 'fas fa-exclamation-triangle',
+                    'error': 'fas fa-times-circle'
+                };
+                
+                const toastHtml = `
+                    <div class="toast professional-toast ${type}" role="alert" id="${toastId}">
+                        <div class="toast-body">
+                            <div class="toast-content">
+                                <i class="${icons[type]} toast-icon"></i>
+                                <div class="flex-grow-1">
+                                    <div class="toast-title">${title}</div>
+                                    <div class="toast-message">${message}</div>
+                                </div>
+                                <button type="button" class="btn-close toast-close" data-bs-dismiss="toast"></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                this.container.insertAdjacentHTML('beforeend', toastHtml);
+                
+                const toastElement = document.getElementById(toastId);
+                const bsToast = new bootstrap.Toast(toastElement, {
+                    delay: duration,
+                    autohide: true
+                });
+                
+                bsToast.show();
+                
+                // Remove from DOM after hiding
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+                
+                return bsToast;
+            }
+            
+            success(title, message, duration) {
+                return this.show('success', title, message, duration);
+            }
+            
+            error(title, message, duration) {
+                return this.show('error', title, message, duration);
+            }
+            
+            warning(title, message, duration) {
+                return this.show('warning', title, message, duration);
+            }
+            
+            info(title, message, duration) {
+                return this.show('info', title, message, duration);
+            }
+        }
+        
+        // Initialize toast system
+        const toast = new ProfessionalToast();
+        
+        // Convert Django messages to professional toasts
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageElements = document.querySelectorAll('#django-messages > div');
+            
+            messageElements.forEach(element => {
+                const type = element.getAttribute('data-message-type');
+                const message = element.getAttribute('data-message-text');
+                
+                let title = 'Notification';
+                let toastType = 'info';
+                
+                switch(type) {
+                    case 'success':
+                        title = 'Success';
+                        toastType = 'success';
+                        break;
+                    case 'error':
+                        title = 'Error';
+                        toastType = 'error';
+                        break;
+                    case 'warning':
+                        title = 'Warning';
+                        toastType = 'warning';
+                        break;
+                    case 'info':
+                        title = 'Information';
+                        toastType = 'info';
+                        break;
+                }
+                
+                toast.show(toastType, title, message);
+            });
+        });
+        
+        // Make toast available globally
+        window.toast = toast;
+        </script>
+    </body>
+</html>

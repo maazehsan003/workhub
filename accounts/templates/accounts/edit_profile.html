@@ -1,0 +1,128 @@
+{% extends "accounts/layout1.html" %}
+{% block body %}
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header">
+          <h3 class="text-center mb-0">Edit Profile</h3>
+        </div>
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {% if profile.role == 'freelancer' %}
+              <!-- Freelancer Edit Fields -->
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="first_name" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                           value="{{ freelancer_profile.first_name }}" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="last_name" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                           value="{{ freelancer_profile.last_name }}" required>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="title" class="form-label">Professional Title</label>
+                <input type="text" class="form-control" id="title" name="title" 
+                       value="{{ freelancer_profile.title }}" required>
+              </div>
+              
+              <div class="mb-3">
+                <label for="bio" class="form-label">Bio</label>
+                <textarea class="form-control" id="bio" name="bio" rows="4" required>{{ freelancer_profile.bio }}</textarea>
+              </div>
+              
+              <div class="mb-3">
+                <label for="skills" class="form-label">Skills (comma separated)</label>
+                <input type="text" class="form-control" id="skills" name="skills" 
+                       value="{{ freelancer_profile.skills }}" required>
+              </div>
+              
+              <div class="mb-3">
+                <label for="phone_number" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                       value="{{ freelancer_profile.phone_number }}">
+              </div>
+              
+              <div class="mb-3">
+                <label for="hourly_rate" class="form-label">Hourly Rate ($)</label>
+                <input type="number" class="form-control" id="hourly_rate" name="hourly_rate" 
+                       value="{{ freelancer_profile.hourly_rate }}" step="0.01" required>
+              </div>
+              
+              <div class="mb-3">
+                <label for="profile_picture" class="form-label">Profile Picture</label>
+                {% if freelancer_profile.profile_picture %}
+                  <div class="mb-2">
+                    <img src="{{ freelancer_profile.profile_picture.url }}" alt="Current Profile" 
+                         class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                  </div>
+                {% endif %}
+                <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/*">
+              </div>
+              
+            {% elif profile.role == 'client' %}
+              <!-- Client Edit Fields -->
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="first_name" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                           value="{{ client_profile.first_name }}" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="last_name" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                           value="{{ client_profile.last_name }}" required>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="company_name" class="form-label">Company Name</label>
+                <input type="text" class="form-control" id="company_name" name="company_name" 
+                       value="{{ client_profile.company_name }}">
+              </div>
+              
+              <div class="mb-3">
+                <label for="phone_number" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                       value="{{ client_profile.phone_number }}">
+              </div>
+              
+              <div class="mb-3">
+                <label for="profile_picture" class="form-label">Profile Picture</label>
+                {% if client_profile.profile_picture %}
+                  <div class="mb-2">
+                    <img src="{{ client_profile.profile_picture.url }}" alt="Current Profile" 
+                         class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                  </div>
+                {% endif %}
+                <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/*">
+              </div>
+            {% endif %}
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <a href="{% url 'dashboard' %}" class="btn btn-secondary me-md-2">Cancel</a>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

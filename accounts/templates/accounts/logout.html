@@ -1,0 +1,80 @@
+{% extends "accounts/layout1.html" %}
+{% block body %}
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow text-center">
+        <div class="card-body py-5">
+          <div class="mb-4">
+            <div class="text-success mb-3">
+              <i class="fas fa-check-circle fa-4x"></i>
+            </div>
+            <h2 class="card-title text-success mb-3">Successfully Logged Out</h2>
+            <p class="card-text text-muted mb-4">
+              Thanks for using Work Hub! Your session has been safely ended.
+            </p>
+          </div>
+          
+          <div class="d-grid gap-2 d-md-block">
+            <a href="{% url 'login' %}" class="btn btn-primary btn-lg me-md-2">
+              <i class="fas fa-sign-in-alt me-2"></i>Sign In Again
+            </a>
+            <a href="{% url 'register' %}" class="btn btn-outline-success btn-lg">
+              <i class="fas fa-user-plus me-2"></i>Create New Account
+            </a>
+          </div>
+          
+          <hr class="my-4">
+          
+          <div class="text-muted">
+            <small>
+              <i class="fas fa-shield-alt me-1"></i>
+              Your data is secure and your session has been completely terminated.
+            </small>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Features Showcase -->
+      <div class="card mt-4 border-0 bg-light">
+        <div class="card-body">
+          <h6 class="text-center text-muted mb-4">Why Choose Work Hub?</h6>
+          <div class="row text-center">
+            <div class="col-md-4 mb-3">
+              <div class="text-primary mb-2">
+                <i class="fas fa-handshake fa-2x"></i>
+              </div>
+              <h6 class="text-dark">Trusted Platform</h6>
+              <small class="text-muted">Connect with verified freelancers and clients</small>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="text-success mb-2">
+                <i class="fas fa-dollar-sign fa-2x"></i>
+              </div>
+              <h6 class="text-dark">Fair Pricing</h6>
+              <small class="text-muted">Competitive rates for quality work</small>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="text-info mb-2">
+                <i class="fas fa-clock fa-2x"></i>
+              </div>
+              <h6 class="text-dark">Fast Delivery</h6>
+              <small class="text-muted">Quick turnaround on projects</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Call to Action -->
+      <div class="text-center mt-4">
+        <p class="text-muted">
+          Ready to get back to work? 
+          <a href="{% url 'login' %}" class="text-decoration-none fw-bold">Sign in now</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

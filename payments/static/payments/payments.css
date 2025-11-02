@@ -1,0 +1,928 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.professional-toast {
+    min-width: 350px;
+    backdrop-filter: blur(10px);
+    border: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.professional-toast.success {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.95), rgba(25, 135, 84, 0.95));
+    color: white;
+}
+
+.professional-toast.info {
+    background: linear-gradient(135deg, rgba(13, 202, 240, 0.95), rgba(13, 110, 253, 0.95));
+    color: white;
+}
+
+.professional-toast.warning {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.95), rgba(255, 143, 0, 0.95));
+    color: white;
+}
+
+.professional-toast.error {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.95), rgba(176, 42, 55, 0.95));
+    color: white;
+}
+
+.toast-icon {
+    font-size: 1.5rem;
+    margin-right: 0.75rem;
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+}
+
+.toast-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.toast-message {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.toast-close {
+    color: white;
+    opacity: 0.7;
+}
+
+.toast-close:hover {
+    opacity: 1;
+    color: white;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.professional-toast.show {
+    animation: slideInRight 0.3s ease-out;
+}
+
+.wallet-stats {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.transaction-amount.credit {
+    color: #28a745 !important;
+    font-weight: bold;
+}
+
+.transaction-amount.debit {
+    color: #dc3545 !important;
+    font-weight: bold;
+}
+
+.wallet-balance {
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    margin: 0;
+    color: #333;
+}
+
+.nav-links {
+    margin-top: 15px;
+}
+
+.nav-links a {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.nav-links a:hover {
+    background-color: #0056b3;
+}
+
+.section {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    font-size: 1.3em;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+}
+
+.payment-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.payment-table th,
+.payment-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.payment-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.payment-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-on-hold {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-completed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-cancelled {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-refunded {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+.amount-sent {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.amount-received {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.no-data {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 40px;
+}
+
+.payment-type {
+    font-size: 0.9em;
+    color: #666;
+}
+
+/* Unread notification dot */
+.navbar .nav-link {
+  position: relative;
+}
+
+.navbar .unread-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  background: #dc3545;
+  border-radius: 50%;
+  border: 2px solid #f8f9fa;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+@media (max-width: 575.98px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    /* Wallet header */
+    .wallet-header {
+        padding: 20px 15px !important;
+    }
+
+    .wallet-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .wallet-header .balance {
+        font-size: 2.2em !important;
+    }
+
+    .wallet-balance {
+        font-size: 2rem;
+    }
+
+    /* Toast notifications */
+    .toast-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+    }
+    
+    .professional-toast {
+        min-width: auto;
+        width: 100%;
+    }
+
+    /* Cards */
+    .card {
+        margin-bottom: 15px;
+    }
+
+    .card-body {
+        padding: 15px;
+    }
+
+    .card-header {
+        padding: 12px 15px;
+    }
+
+    .card-header h5 {
+        font-size: 1rem;
+    }
+
+    /* Header with buttons */
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .d-flex.justify-content-between > div {
+        width: 100%;
+    }
+
+    .d-flex.justify-content-between .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    /* Tables */
+    .table-responsive {
+        margin: 0 -15px;
+        width: calc(100% + 30px);
+    }
+
+    .payment-table {
+        font-size: 0.85rem;
+    }
+
+    .payment-table th,
+    .payment-table td {
+        padding: 8px 6px;
+    }
+
+    .payment-table th:first-child,
+    .payment-table td:first-child {
+        padding-left: 15px;
+    }
+
+    .payment-table th:last-child,
+    .payment-table td:last-child {
+        padding-right: 15px;
+    }
+
+    /* Hide less important columns on mobile */
+    .payment-table th:nth-child(3),
+    .payment-table td:nth-child(3) {
+        display: none;
+    }
+
+    .status-badge {
+        font-size: 0.7em;
+        padding: 3px 6px;
+    }
+
+    .input-group {
+        flex-wrap: wrap;
+    }
+
+    .input-group .form-control {
+        flex: 1 1 100%;
+        margin-bottom: 10px;
+        min-width: 0;
+        font-size: 16px; 
+    }
+
+    .input-group .btn {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .input-group-text {
+        font-size: 0.9rem;
+    }
+
+    /* Stats cards */
+    .row .col-md-4,
+    .row .col-md-6 {
+        margin-bottom: 15px;
+    }
+
+    .border.rounded {
+        padding: 15px !important;
+    }
+
+    .border.rounded h4 {
+        font-size: 1.5rem;
+    }
+
+    .card.text-center h4 {
+        font-size: 1.8rem;
+    }
+
+    .card.text-center i {
+        font-size: 1.5rem;
+    }
+
+    .form-control,
+    .form-select {
+        font-size: 16px; 
+        min-height: 44px;
+    }
+
+    .btn {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+
+    .btn-lg {
+        padding: 12px 20px;
+    }
+
+    .d-grid.gap-2 .btn {
+        margin-bottom: 10px;
+    }
+
+    .alert {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+
+    .payment-table small {
+        font-size: 0.75rem;
+    }
+
+    .section {
+        padding: 15px;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    h2 {
+        font-size: 1.3rem;
+    }
+
+    /* No data state */
+    .no-data {
+        padding: 30px 15px;
+        font-size: 0.9rem;
+    }
+
+    /* Wallet stats */
+    .wallet-stats {
+        padding: 12px;
+    }
+
+    .shadow-lg {
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .card-header h4 {
+        font-size: 1.2rem;
+    }
+
+    .card-header i {
+        font-size: 2rem;
+    }
+
+    .row .col-6 {
+        margin-bottom: 10px;
+    }
+
+    .table-sm th,
+    .table-sm td {
+        padding: 8px 6px;
+        font-size: 0.85rem;
+    }
+
+    .payment-table td {
+        word-break: break-word;
+    }
+}
+
+@media (min-width: 576px) and (max-width: 767.98px) {
+    /* Toast notifications */
+    .toast-container {
+        right: 15px;
+    }
+
+    .professional-toast {
+        min-width: 300px;
+    }
+
+    .wallet-header .balance {
+        font-size: 2.5em !important;
+    }
+
+    .payment-table {
+        font-size: 0.9rem;
+    }
+
+    .payment-table th,
+    .payment-table td {
+        padding: 10px 8px;
+    }
+
+    .payment-table th:nth-child(3),
+    .payment-table td:nth-child(3) {
+        display: table-cell;
+    }
+
+    .input-group .form-control {
+        flex: 1 1 auto;
+        margin-bottom: 0;
+    }
+
+    .input-group .btn {
+        flex: 0 0 auto;
+        width: auto;
+    }
+
+    .row .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .row .col-md-4 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .container {
+        max-width: 100%;
+        padding: 0 20px;
+    }
+
+    .wallet-header {
+        padding: 25px !important;
+    }
+
+    .card-body {
+        padding: 18px;
+    }
+
+    .payment-table th,
+    .payment-table td {
+        padding: 10px;
+    }
+
+    .row .col-md-4 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .row .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Section */
+    .section {
+        padding: 18px;
+    }
+}
+
+@media (max-width: 767.98px) and (orientation: landscape) {
+    body {
+        padding: 10px;
+    }
+
+    .wallet-header {
+        padding: 15px !important;
+    }
+
+    .wallet-header .balance {
+        font-size: 2em !important;
+        margin: 5px 0 !important;
+    }
+
+    .card {
+        margin-bottom: 10px;
+    }
+
+    .card-body {
+        padding: 12px;
+    }
+
+    .section {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+
+    .row .col-md-4,
+    .row .col-md-6 {
+        margin-bottom: 10px;
+    }
+
+    .border.rounded {
+        padding: 10px !important;
+    }
+
+    .alert {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 359.98px) {
+    body {
+        padding: 5px;
+    }
+
+    .container {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    h1 {
+        font-size: 1.3rem;
+    }
+
+    .wallet-header .balance {
+        font-size: 2em !important;
+    }
+
+    .card-body {
+        padding: 12px;
+    }
+
+    .payment-table {
+        font-size: 0.8rem;
+    }
+
+    .payment-table th,
+    .payment-table td {
+        padding: 6px 4px;
+    }
+
+    .btn {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+    }
+
+    .status-badge {
+        font-size: 0.65em;
+        padding: 2px 5px;
+    }
+
+    .border.rounded h4 {
+        font-size: 1.3rem;
+    }
+
+    .card.text-center h4 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .btn,
+    .nav-links a,
+    .input-group .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .form-control,
+    .form-select,
+    input[type="number"] {
+        min-height: 44px;
+        font-size: 16px; 
+    }
+
+    .payment-table tr {
+        cursor: pointer;
+    }
+
+    .payment-table tbody tr {
+        border-bottom: 2px solid #ddd;
+    }
+
+    .btn + .btn {
+        margin-top: 10px;
+    }
+
+    .d-flex .btn {
+        margin-right: 0;
+    }
+
+    .payment-table tr:hover,
+    .btn:hover,
+    .nav-links a:hover {
+        transform: none;
+        box-shadow: initial;
+    }
+
+    .payment-table tr:hover {
+        background-color: #f8f9fa;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .col-md-6.justify-content-center {
+        padding: 0 10px;
+    }
+
+    .card.shadow-lg {
+        margin: 10px 0;
+    }
+
+    .row .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .border.rounded.p-3 {
+        padding: 12px !important;
+    }
+
+    .alert i {
+        font-size: 1rem;
+    }
+
+    .card-header .fa-2x {
+        font-size: 1.5rem !important;
+    }
+
+    code {
+        font-size: 0.75rem;
+        word-break: break-all;
+    }
+
+    .card.text-center.border-success,
+    .card.text-center.border-danger {
+        border-width: 2px !important;
+    }
+
+    .card.text-center i.fa-2x {
+        font-size: 1.5rem !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .payment-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .payment-table thead,
+    .payment-table tbody,
+    .payment-table tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    .payment-table th:first-child,
+    .payment-table td:first-child {
+        min-width: 100px;
+    }
+
+    .payment-table th:nth-child(2),
+    .payment-table td:nth-child(2) {
+        min-width: 150px;
+    }
+
+    .payment-table th:last-child,
+    .payment-table td:last-child {
+        min-width: 80px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .wallet-header {
+        text-align: center;
+    }
+
+    .wallet-header p {
+        font-size: 0.9rem;
+    }
+
+    .card-body form {
+        margin-bottom: 15px;
+    }
+
+    .table-sm {
+        font-size: 0.8rem;
+    }
+
+    .release-payment-btn {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .card:last-child .table {
+        font-size: 0.85rem;
+    }
+
+    .payment-table td:nth-child(2) {
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .d-flex.justify-content-between.align-items-center.mb-4 h1 {
+        font-size: 1.3rem;
+        margin-bottom: 10px;
+    }
+
+    .d-flex.justify-content-between.align-items-center.mb-4 > div:last-child {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .card-header.d-flex {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px;
+    }
+
+    .card-header.d-flex > div:last-child {
+        width: 100%;
+        text-align: left !important;
+    }
+
+    .row.mt-4 {
+        margin-top: 1rem !important;
+    }
+
+    .row.mt-4 .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .card.text-center.border-success,
+    .card.text-center.border-danger {
+        padding: 10px;
+    }
+}
+
+@media print {
+    .btn,
+    .navbar,
+    .toast-container,
+    .nav-links,
+    .input-group,
+    form {
+        display: none !important;
+    }
+
+    body {
+        padding: 0;
+        background: white;
+    }
+
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .card,
+    .section {
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .wallet-header {
+        background: white !important;
+        color: #000 !important;
+        border: 1px solid #000 !important;
+    }
+
+    .payment-table {
+        font-size: 10pt;
+    }
+
+    .payment-table th,
+    .payment-table td {
+        padding: 8px;
+    }
+    .payment-table th:nth-child(3),
+    .payment-table td:nth-child(3) {
+        display: table-cell !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .btn:focus,
+    .form-control:focus,
+    input:focus {
+        outline: 2px solid #007bff;
+        outline-offset: 2px;
+    }
+    .status-badge {
+        border: 1px solid currentColor;
+    }
+    .release-payment-btn,
+    .btn-primary,
+    .btn-success {
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
+}

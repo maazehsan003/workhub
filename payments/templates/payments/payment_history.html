@@ -1,0 +1,225 @@
+{% extends "payments/layout3.html" %}
+{% load static %}
+
+{% block title %}Payment History - Work Hub{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-history"></i> Payment History</h1>
+        <div>
+            <a href="{% url 'payments:wallet' %}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-wallet"></i> Back to Wallet
+            </a>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Freelancer View: Payments Received -->
+    {% if is_freelancer %}
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="fas fa-arrow-down text-success"></i> Payments Received</h5>
+            <div class="text-success">
+                <strong>Total: ${{ total_received|floatformat:2 }}</strong>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if payments_received %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date Completed</th>
+                                <th>Job/Project</th>
+                                <th>From Client</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments_received %}
+                                <tr>
+                                    <td>
+                                        <small>{{ payment.completed_at|date:"M d, Y" }}</small><br>
+                                        <small class="text-muted">{{ payment.completed_at|time:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if payment.job %}
+                                            <strong>{{ payment.job.title|truncatechars:40 }}</strong>
+                                            <br><small class="text-muted">{{ payment.job.category }}</small>
+                                        {% else %}
+                                            {{ payment.description|truncatechars:40 }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-user"></i> {{ payment.from_user.username }}
+                                    </td>
+                                    <td>
+                                        <span class="text-success fw-bold">+${{ payment.amount }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check"></i> {{ payment.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-arrow-down fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Payments Received</h5>
+                    <p class="text-muted">Your incoming payments will appear here when you complete jobs.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Client View: Payments Sent -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="fas fa-arrow-up text-danger"></i> Payments Sent</h5>
+            <div class="text-danger">
+                <strong>Total: ${{ total_sent|floatformat:2 }}</strong>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if payments_sent %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Job/Project</th>
+                                <th>To Freelancer</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments_sent %}
+                                <tr>
+                                    <td>
+                                        <small>{{ payment.created_at|date:"M d, Y" }}</small><br>
+                                        <small class="text-muted">{{ payment.created_at|time:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if payment.job %}
+                                            <strong>{{ payment.job.title|truncatechars:40 }}</strong>
+                                            <br><small class="text-muted">{{ payment.job.category }}</small>
+                                        {% else %}
+                                            {{ payment.description|truncatechars:40 }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if payment.to_user %}
+                                            <i class="fas fa-user"></i> {{ payment.to_user.username }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="text-danger fw-bold">-${{ payment.amount }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if payment.status == 'completed' %}success{% elif payment.status == 'on_hold' %}warning{% elif payment.status == 'pending' %}secondary{% elif payment.status == 'cancelled' %}danger{% else %}light{% endif %}">
+                                            {% if payment.status == 'completed' %}
+                                                <i class="fas fa-check"></i>
+                                            {% elif payment.status == 'on_hold' %}
+                                                <i class="fas fa-clock"></i>
+                                            {% elif payment.status == 'cancelled' %}
+                                                <i class="fas fa-times"></i>
+                                            {% endif %}
+                                            {{ payment.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-arrow-up fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Payments Sent</h5>
+                    <p class="text-muted">Your outgoing payments will appear here when you hire freelancers.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Summary Card -->
+    <div class="row mt-4">
+        {% if is_freelancer %}
+            <div class="col-md-4">
+                <div class="card text-center border-success">
+                    <div class="card-body">
+                        <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+                        <h4 class="text-success">${{ total_received|floatformat:2 }}</h4>
+                        <small class="text-muted">Total Earnings</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-handshake fa-2x text-primary mb-2"></i>
+                        <h4 class="text-primary">{{ payments_received.count }}</h4>
+                        <small class="text-muted">Jobs Completed</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                        <h4 class="text-info">
+                            {% if payments_received.count > 0 %}
+                                ${{ total_received|floatformat:2 }}
+                            {% else %}
+                                $0.00
+                            {% endif %}
+                        </h4>
+                        <small class="text-muted">Average per Job</small>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-md-4">
+                <div class="card text-center border-danger">
+                    <div class="card-body">
+                        <i class="fas fa-credit-card fa-2x text-danger mb-2"></i>
+                        <h4 class="text-danger">${{ total_sent|floatformat:2 }}</h4>
+                        <small class="text-muted">Total Invested</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-briefcase fa-2x text-primary mb-2"></i>
+                        <h4 class="text-primary">{{ payments_sent.count }}</h4>
+                        <small class="text-muted">Projects Funded</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                        <h4 class="text-warning">{{ on_hold_count|default:0 }}</h4>
+                        <small class="text-muted">Payments On Hold</small>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

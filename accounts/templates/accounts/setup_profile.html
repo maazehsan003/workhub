@@ -1,0 +1,135 @@
+{% extends "accounts/layout1.html" %}
+{% block body %}
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header">
+          <h3 class="text-center mb-0">
+            {% if role == 'freelancer' %}
+              Complete Your Freelancer Profile
+            {% else %}
+              Complete Your Client Profile
+            {% endif %}
+          </h3>
+          <p class="text-center mb-0 mt-2">Just a few more details to get started!</p>
+        </div>
+          <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {% if role == 'freelancer' %}
+              <!-- Freelancer Fields -->
+               <div class="container">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="first_name" class="form-label">First Name *</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="last_name" class="form-label">Last Name *</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" required>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="title" class="form-label">Professional Title *</label>
+                <input type="text" class="form-control" id="title" name="title" 
+                       placeholder="e.g., Web Developer, Graphic Designer" required>
+              </div>
+              
+              <div class="mb-3">
+                <label for="bio" class="form-label">Professional Bio *</label>
+                <textarea class="form-control" id="bio" name="bio" rows="4" 
+                          placeholder="Tell clients about your experience and expertise..." required></textarea>
+                <div class="form-text">This will be visible to potential clients</div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="skills" class="form-label">Skills *</label>
+                <input type="text" class="form-control" id="skills" name="skills" 
+                       placeholder="e.g., JavaScript, Python, Adobe Photoshop" required>
+                <div class="form-text">Separate multiple skills with commas</div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="phone_number" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                       placeholder="e.g., +1-234-567-8900">
+                <div class="form-text">Optional: Clients can contact you directly</div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="hourly_rate" class="form-label">Hourly Rate (USD) *</label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input type="number" class="form-control" id="hourly_rate" name="hourly_rate" 
+                         min="1" step="0.01" placeholder="25.00" required>
+                </div>
+                <div class="form-text">You can always change this later</div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="profile_picture" class="form-label">Profile Picture</label>
+                <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/*">
+                <div class="form-text">Optional: A professional photo helps build trust</div>
+              </div>
+              </div>
+
+            {% elif role == 'client' %}
+              <!-- Client Fields -->
+               <div class="container">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="first_name" class="form-label">First Name *</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="last_name" class="form-label">Last Name *</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" required>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="company_name" class="form-label">Company Name</label>
+                <input type="text" class="form-control" id="company_name" name="company_name" 
+                       placeholder="Your Company Name">
+                <div class="form-text">Optional: Leave blank if you're hiring as an individual</div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="phone_number" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                       placeholder="e.g., +1-234-567-8900">
+                <div class="form-text">Optional: Freelancers can contact you directly</div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="profile_picture" class="form-label">Profile Picture</label>
+                <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/*">
+                <div class="form-text">Optional: A professional photo helps build trust</div>
+              </div>
+            {% endif %}
+            
+            <div class="d-grid">
+              <button type="submit" class="btn btn-success btn-lg">Complete Setup & Go to Dashboard</button>
+          </form>
+          </div>
+          <div class="text-center mt-3">
+            <small class="text-muted">* Required fields</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}

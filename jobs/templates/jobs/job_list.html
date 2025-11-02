@@ -1,0 +1,176 @@
+{% extends "jobs/layout2.html" %}
+{% load static %}
+
+{% block title %}Job Listings - Work Hub{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'jobs/jobs.css' %}">
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Available Jobs</h2>
+                {% if user.is_authenticated and user.profile.role == 'client' %}
+                    <a href="{% url 'post_job' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Post a Job
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- Search Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="job-search" 
+                                       placeholder="Search jobs by title, category, or description...">
+                                <button class="btn btn-outline-secondary" 
+                                        type="button" 
+                                        id="clear-search"
+                                        title="Clear search">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="category-filter">
+                                <option value="">All Categories</option>
+                                <option value="web-development">Web Development</option>
+                                <option value="mobile-development">Mobile Development</option>
+                                <option value="design">Design</option>
+                                <option value="writing">Writing</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="data-entry">Data Entry</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Search Results Info -->
+                    <div class="mt-3">
+                        <div id="search-results-info" class="text-muted small" style="display: none;">
+                            <i class="fas fa-info-circle"></i> 
+                            <span id="results-count">0</span> job(s) found
+                            <span id="search-term-display"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="job-listings">
+                {% for job in jobs %}
+                    <div class="card mb-3 job-card" 
+                         data-job-id="{{ job.id }}" 
+                         data-title="{{ job.title|lower }}"
+                         data-category="{{ job.category }}"
+                         data-description="{{ job.description|lower|truncatewords:50 }}"
+                         style="cursor: pointer;">
+                        <div class="card-body">
+                            <h5 class="card-title job-title">{{ job.title }}</h5>
+                            <p class="card-text text-muted job-description">{{ job.description|truncatewords:20 }}</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="text-muted job-category">
+                                        <i class="fas fa-tag"></i> {{ job.get_category_display }}
+                                    </small>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i> {{ job.deadline }}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge bg-success">${{ job.budget }}</span>
+                                <small class="text-muted ms-2">by {{ job.client.username }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="d-flex flex-column justify-content-center align-items-center text-center" style="min-height: 400px;">
+                        <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted mb-2">No jobs available</h4>
+                        <p class="text-muted mb-0">More jobs will be posted soon!</p>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- No Results Message -->
+            <div id="no-results-message" class="d-none">
+                <div class="d-flex flex-column justify-content-center align-items-center text-center" style="min-height: 300px;">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted mb-2">No jobs found</h4>
+                    <p class="text-muted mb-0">Try adjusting your search terms or filters.</p>
+                    <button class="btn btn-outline-primary mt-3" id="reset-search">
+                        <i class="fas fa-undo"></i> Show All Jobs
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div id="job-detail-panel" class="card sticky-top" style="display: none;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Job Details</h5>
+                    <button type="button" class="btn-close" id="close-detail"></button>
+                </div>
+                <div class="card-body">
+                    <div id="job-detail-content">
+                        <!-- Job details will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading overlay -->
+<div id="loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;">
+    <div class="d-flex justify-content-center align-items-center h-100">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'jobs/jobs.js' %}"></script>
+
+<!-- Debug script to test search functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Debug: Log all job cards and their data attributes
+    console.log('=== SEARCH DEBUG INFO ===');
+    const jobCards = document.querySelectorAll('.job-card');
+    console.log('Total job cards found:', jobCards.length);
+    
+    jobCards.forEach((card, index) => {
+        console.log(`Job Card ${index}:`, {
+            id: card.getAttribute('data-job-id'),
+            title: card.getAttribute('data-title'),
+            category: card.getAttribute('data-category'),
+            description: card.getAttribute('data-description'),
+            titleText: card.querySelector('.job-title')?.textContent,
+            categoryText: card.querySelector('.job-category')?.textContent
+        });
+    });
+    
+    // Test search elements
+    const searchInput = document.getElementById('job-search');
+    const categoryFilter = document.getElementById('category-filter');
+    
+    console.log('Search input found:', !!searchInput);
+    console.log('Category filter found:', !!categoryFilter);
+    console.log('=== END DEBUG INFO ===');
+});
+</script>
+
+{% endblock %}

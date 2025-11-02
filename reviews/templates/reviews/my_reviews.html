@@ -1,0 +1,248 @@
+{% extends "reviews/layout4.html" %}
+{% load static %}
+
+{% block title %}My Reviews - Work Hub{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-star me-2"></i>
+                My Reviews
+            </h2>
+        </div>
+    </div>
+
+    <div class="row">
+    {% if user.profile.role == 'client' %}
+        <!-- Reviews I've Written -->
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-pen me-2"></i>
+                        Reviews I've Written ({{ reviews_given.count }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews_given %}
+                        {% for review in reviews_given %}
+                            <div class="review-item mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            <a href="{% url 'reviews:view_review' review.job.id %}" 
+                                               class="text-decoration-none">
+                                                {{ review.job.title }}
+                                            </a>
+                                        </h6>
+                                        <small class="text-muted">
+                                            For: {{ review.reviewee.username }} â€¢ 
+                                            {{ review.created_at|date:"M j, Y" }}
+                                        </small>
+                                    </div>
+                                    <div class="star-rating-display">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= review.rating %}
+                                                <i class="fas fa-star star"></i>
+                                            {% else %}
+                                                <i class="fas fa-star star empty"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="review-feedback-preview">
+                                    {% if review.feedback|length > 100 %}
+                                        {{ review.feedback|slice:":100" }}...
+                                    {% else %}
+                                        {{ review.feedback }}
+                                    {% endif %}
+                                </div>
+                                <div class="mt-2">
+                                    <a href="{% url 'reviews:view_review' review.job.id %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </a>
+                                    <a href="{% url 'reviews:edit_review' review.job.id %}" 
+                                       class="btn btn-sm btn-outline-warning">
+                                        <i class="fas fa-edit me-1"></i>Edit
+                                    </a>
+                                    {% if not review.is_public %}
+                                        <span class="badge bg-secondary ms-2">Private</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-edit text-muted mb-3" style="font-size: 3em;"></i>
+                            <h5 class="text-muted">No Reviews Written</h5>
+                            <p class="text-muted">You haven't written any reviews yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if user.profile.role == 'freelancer' %}
+        <!-- Reviews I've Received -->
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-star me-2"></i>
+                        Reviews I've Received ({{ reviews_received.count }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews_received %}
+                        {% for review in reviews_received %}
+                            <div class="review-item mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-1">{{ review.job.title }}</h6>
+                                        <small class="text-muted">
+                                            From: {{ review.reviewer.username }} â€¢ 
+                                            {{ review.created_at|date:"M j, Y" }}
+                                        </small>
+                                    </div>
+                                    <div class="star-rating-display">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= review.rating %}
+                                                <i class="fas fa-star star"></i>
+                                            {% else %}
+                                                <i class="fas fa-star star empty"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="review-feedback-preview">
+                                    {% if review.feedback|length > 100 %}
+                                        {{ review.feedback|slice:":100" }}...
+                                    {% else %}
+                                        {{ review.feedback }}
+                                    {% endif %}
+                                </div>
+                                <div class="mt-2">
+                                    <a href="{% url 'reviews:view_review' review.job.id %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </a>
+                                    <span class="badge bg-info ms-2">
+                                        ${{ review.job.budget }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        <!-- View All Reviews Link -->
+                        <div class="text-center mt-3">
+                            <a href="{% url 'reviews:freelancer_reviews' user.username %}" 
+                               class="btn btn-outline-success">
+                                <i class="fas fa-external-link-alt me-1"></i>
+                                View My Public Profile
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-star text-muted mb-3" style="font-size: 3em;"></i>
+                            <h5 class="text-muted">No Reviews Received</h5>
+                            <p class="text-muted">You haven't received any public reviews yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <!-- Summary Statistics -->
+    {% if reviews_received %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Review Summary
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h4 text-primary mb-1">
+                                        {{ user.freelancer_profile.total_reviews }}
+                                    </div>
+                                    <div class="small text-muted">Total Reviews</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h4 text-success mb-1">
+                                        {{ user.freelancer_profile.average_rating|floatformat:1 }}
+                                    </div>
+                                    <div class="small text-muted">Average Rating</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h4 text-warning mb-1">
+                                        {{ user.freelancer_profile.five_star_count }}
+                                    </div>
+                                    <div class="small text-muted">5-Star Reviews</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h4 text-info mb-1">
+                                        {% if user.freelancer_profile.total_reviews > 0 %}
+                                            {% widthratio user.freelancer_profile.five_star_count user.freelancer_profile.total_reviews 100 %}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </div>
+                                    <div class="small text-muted">5-Star Percentage</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title">
+                        <i class="fas fa-rocket me-2"></i>
+                        Quick Actions
+                    </h6>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="{% url 'my_jobs' %}" class="btn btn-outline-success">
+                            <i class="fas fa-tasks me-1"></i>
+                            My Active Jobs
+                        </a>
+                        <a href="{% url 'applications' %}" class="btn btn-outline-info">
+                            <i class="fas fa-file-alt me-1"></i>
+                            My Applications
+                        </a>
+                        {% if user.profile.role == 'freelancer' %}
+                            <a href="{% url 'reviews:freelancer_reviews' user.username %}" class="btn btn-outline-warning">
+                                <i class="fas fa-star me-1"></i>
+                                Public Profile
+                            </a>
+                            <a href="{% url 'job_list' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-search me-1"></i>
+                                Find New Jobs
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

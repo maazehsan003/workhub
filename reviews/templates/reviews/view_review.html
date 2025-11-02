@@ -1,0 +1,163 @@
+{% extends "reviews/layout4.html" %}
+{% load static %}
+
+{% block title %}Review for {{ job.title }} - Work Hub{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex align-items-center mb-4">
+                <a href="{% url 'view_work_submission' job.id %}" class="btn btn-outline-secondary me-3">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h2 class="mb-1">Review Details</h2>
+                    <p class="text-muted mb-0">{{ job.title }}</p>
+                </div>
+            </div>
+
+            <!-- Review Display -->
+            <div class="review-card">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="reviewer-info">
+                            <div class="reviewer-avatar">
+                                {{ review.reviewer.username|first|upper }}
+                            </div>
+                            <div>
+                                <h5 class="mb-1">{{ review.reviewer.username }}</h5>
+                                <p class="text-muted mb-0">Client</p>
+                            </div>
+                        </div>
+                        
+                        <div class="review-rating">
+                            <div class="star-rating-display">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fas fa-star star"></i>
+                                    {% else %}
+                                        <i class="fas fa-star star empty"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="rating-text">{{ review.rating }} out of 5 stars</span>
+                        </div>
+                        
+                        <div class="review-feedback">
+                            {{ review.feedback|linebreaks }}
+                        </div>
+                        
+                        <div class="review-meta">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    Reviewed on {{ review.created_at|date:"F j, Y" }}
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <i class="fas fa-briefcase me-2"></i>
+                                    Job Budget: ${{ job.budget }}
+                                </div>
+                            </div>
+                            {% if review.updated_at != review.created_at %}
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-edit me-1"></i>
+                                        Last updated {{ review.updated_at|date:"F j, Y \a\t g:i A" }}
+                                    </small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="job-info bg-light p-3 rounded">
+                            <h6 class="mb-3">Job Information</h6>
+                            <div class="mb-2">
+                                <strong>Freelancer:</strong><br>
+                                <span class="text-primary">{{ job.freelancer.username }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <strong>Category:</strong><br>
+                                <span class="badge bg-secondary">{{ job.get_category_display }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <strong>Completed:</strong><br>
+                                {{ job.updated_at|date:"F j, Y" }}
+                            </div>
+                            <div>
+                                <strong>Status:</strong><br>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle"></i> {{ job.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            {% if can_edit %}
+                <div class="text-center mt-4">
+                    <a href="{% url 'reviews:edit_review' job.id %}" class="btn btn-warning me-2">
+                        <i class="fas fa-edit"></i> Edit Review
+                    </a>
+                    <a href="{% url 'view_work_submission' job.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Back to Job Details
+                    </a>
+                        <a href="{% url 'reviews:delete_review' job.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-trash"></i> Delete Review
+                    </a>
+                </div>
+            {% endif %}
+
+            <!-- Freelancer Other Reviews -->
+            {% if job.freelancer.reviews_received.count > 1 %}
+                <div class="mt-5">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Other Reviews for {{ job.freelancer.username }}</h4>
+                        <a href="{% url 'reviews:freelancer_reviews' job.freelancer.username %}" class="btn btn-outline-primary">
+                            View All Reviews
+                        </a>
+                    </div>
+                    
+                    {% for other_review in job.freelancer.reviews_received.all|slice:":3" %}
+                        {% if other_review.id != review.id and other_review.is_public %}
+                            <div class="review-card">
+                                <div class="reviewer-info">
+                                    <div class="reviewer-avatar">
+                                        {{ other_review.reviewer.username|first|upper }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">{{ other_review.reviewer.username }}</h6>
+                                        <p class="text-muted mb-0 small">{{ other_review.created_at|date:"M j, Y" }}</p>
+                                    </div>
+                                    <div class="ms-auto">
+                                        <div class="star-rating-display">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= other_review.rating %}
+                                                    <i class="fas fa-star star"></i>
+                                                {% else %}
+                                                    <i class="fas fa-star star empty"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="review-feedback">
+                                    {% if other_review.feedback|length > 200 %}
+                                        {{ other_review.feedback|slice:":200" }}...
+                                    {% else %}
+                                        {{ other_review.feedback }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

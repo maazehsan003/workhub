@@ -1,0 +1,244 @@
+{% extends "reviews/layout4.html" %}
+{% load static %}
+
+{% block title %}Reviews for {{ freelancer.username }} - Work Hub{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex align-items-center mb-4">
+                <a href="javascript:history.back()" class="btn btn-outline-secondary me-3">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h2 class="mb-1">Reviews for {{ freelancer.username }}</h2>
+                    <p class="text-muted mb-0">
+                        {{ total_reviews }} review{{ total_reviews|pluralize }} 
+                        {% if freelancer_profile.average_rating > 0 %}
+                            • {{ freelancer_profile.average_rating|floatformat:1 }} average rating
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Reviews List -->
+            {% if reviews %}
+                {% for review in reviews %}
+                    <div class="review-card">
+                        <div class="reviewer-info">
+                            <div class="reviewer-avatar">
+                                {{ review.reviewer.username|first|upper }}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ review.reviewer.username }}</h6>
+                                <p class="text-muted mb-0 small">
+                                    {{ review.created_at|date:"F j, Y" }} • {{ review.job.title|truncatechars:40 }}
+                                </p>
+                            </div>
+                            <div class="ms-auto">
+                                <div class="star-rating-display">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <i class="fas fa-star star"></i>
+                                        {% else %}
+                                            <i class="fas fa-star star empty"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="review-feedback">
+                            {{ review.feedback|linebreaks }}
+                        </div>
+                        
+                        <div class="review-meta">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <i class="fas fa-briefcase me-2"></i>
+                                    <strong>Job:</strong> {{ review.job.title }}
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <i class="fas fa-dollar-sign me-2"></i>
+                                    <strong>Budget:</strong> ${{ review.job.budget }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-reviews">
+                    <i class="fas fa-star-o"></i>
+                    <h4>No Reviews Yet</h4>
+                    <p>{{ freelancer.username }} hasn't received any public reviews yet.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Freelancer Stats -->
+            {% if freelancer_profile.total_reviews > 0 %}
+                <div class="freelancer-stats">
+                    <div class="stats-rating">{{ freelancer_profile.average_rating|floatformat:1 }}</div>
+                    <div class="stats-stars" id="avg-rating-stars" data-rating="{{ freelancer_profile.average_rating }}" style="display: flex; justify-content: center; gap: 2px;">
+                        <i class="fas fa-star" style="color: #ffc107;"></i>
+                        <i class="fas fa-star" style="color: #ffc107;"></i>
+                        <i class="fas fa-star" style="color: #ffc107;"></i>
+                        <i class="fas fa-star" style="color: #ffc107;"></i>
+                        <i class="fas fa-star" style="color: #ffc107;"></i>
+                    </div>
+                    <div class="stats-info">
+                        Based on {{ freelancer_profile.total_reviews }} review{{ freelancer_profile.total_reviews|pluralize }}
+                    </div>
+                </div>
+
+              <!-- Rating Breakdown -->
+                <div class="rating-breakdown">
+                    <h6 class="mb-3">Rating Breakdown</h6>
+                    
+                    <!-- 5 Stars -->
+                    <div class="rating-bar">
+                        <div class="rating-bar-label">5 stars</div>
+                        <div class="rating-bar-fill">
+                            {% widthratio freelancer_profile.five_star_count freelancer_profile.total_reviews 100 as five_percent %}
+                            <div class="rating-bar-inner"></div>
+                        </div>
+                        <div class="rating-bar-count">{{ freelancer_profile.five_star_count }}</div>
+                    </div>
+                    
+                    <!-- 4 Stars -->
+                    <div class="rating-bar">
+                        <div class="rating-bar-label">4 stars</div>
+                        <div class="rating-bar-fill">
+                            {% widthratio freelancer_profile.four_star_count freelancer_profile.total_reviews 100 as four_percent %}
+                            <div class="rating-bar-inner"></div>
+                        </div>
+                        <div class="rating-bar-count">{{ freelancer_profile.four_star_count }}</div>
+                    </div>
+                    
+                    <!-- 3 Stars -->
+                    <div class="rating-bar">
+                        <div class="rating-bar-label">3 stars</div>
+                        <div class="rating-bar-fill">
+                            {% widthratio freelancer_profile.three_star_count freelancer_profile.total_reviews 100 as three_percent %}
+                            <div class="rating-bar-inner"></div>
+                        </div>
+                        <div class="rating-bar-count">{{ freelancer_profile.three_star_count }}</div>
+                    </div>
+                    
+                    <!-- 2 Stars -->
+                    <div class="rating-bar">
+                        <div class="rating-bar-label">2 stars</div>
+                        <div class="rating-bar-fill">
+                            {% widthratio freelancer_profile.two_star_count freelancer_profile.total_reviews 100 as two_percent %}
+                            <div class="rating-bar-inner"></div>
+                        </div>
+                        <div class="rating-bar-count">{{ freelancer_profile.two_star_count }}</div>
+                    </div>
+                    
+                    <!-- 1 Star -->
+                    <div class="rating-bar">
+                        <div class="rating-bar-label">1 star</div>
+                        <div class="rating-bar-fill">
+                            {% widthratio freelancer_profile.one_star_count freelancer_profile.total_reviews 100 as one_percent %}
+                            <div class="rating-bar-inner"></div>
+                        </div>
+                        <div class="rating-bar-count">{{ freelancer_profile.one_star_count }}</div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="freelancer-stats">
+                    <div class="stats-rating">-</div>
+                    <div class="stats-stars">
+                        {% for i in "12345" %}
+                            <i class="fas fa-star" style="color: #dee2e6;"></i>
+                        {% endfor %}
+                    </div>
+                    <div class="stats-info">No reviews yet</div>
+                </div>
+            {% endif %}
+
+            
+            <!-- Freelancer Info -->
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-user me-2"></i>Freelancer Info
+                    </h6>
+                    
+                    <div class="mb-3">
+                        <strong>Username:</strong><br>
+                        {{ freelancer.username }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Member since:</strong><br>
+                        {{ freelancer.date_joined|date:"F Y" }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Total Reviews:</strong><br>
+                        {{ freelancer_profile.total_reviews }}
+                    </div>
+                    
+                    {% if freelancer_profile.average_rating > 0 %}
+                        <div class="mb-3">
+                            <strong>Average Rating:</strong><br>
+                            {{ freelancer_profile.average_rating|floatformat:2 }}/5.00
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-clock me-2"></i>Recent Activity
+                    </h6>
+                    
+                    {% if reviews %}
+                        <div class="small text-muted">
+                            Last review: {{ reviews.first.created_at|timesince }} ago
+                        </div>
+                    {% else %}
+                        <div class="small text-muted">
+                            No recent review activity
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Display average rating stars
+(function() {
+    function updateAverageRatingStars() {
+        const avgRatingContainer = document.getElementById('avg-rating-stars');
+        if (avgRatingContainer) {
+            const rating = parseFloat(avgRatingContainer.getAttribute('data-rating'));
+            const roundedRating = Math.round(rating);
+            const stars = avgRatingContainer.querySelectorAll('i');
+            
+            stars.forEach((star, index) => {
+                if (index < roundedRating) {
+                    star.style.color = '#ffc107'; 
+                } else {
+                    star.style.color = '#dee2e6'; 
+                }
+            });
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', updateAverageRatingStars);
+    } else {
+        updateAverageRatingStars();
+    }
+})();
+</script>
+{% endblock %}

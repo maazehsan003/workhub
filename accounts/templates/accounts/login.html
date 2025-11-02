@@ -1,0 +1,81 @@
+{% extends "accounts/layout1.html" %}
+{% block body %}
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow">
+        <div class="card-header">
+          <h3 class="text-center mb-0">Welcome Back</h3>
+          <p class="text-center text-muted mb-0 mt-2">Sign in to your account</p>
+        </div>
+        <div class="card-body">
+        
+          <form method="POST">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+              <label for="username" class="form-label">Username</label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-user"></i>
+                </span>
+                <input type="text" class="form-control" id="username" name="username" 
+                       placeholder="Enter your username" required>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-lock"></i>
+                </span>
+                <input type="password" class="form-control" id="password" name="password" 
+                       placeholder="Enter your password" required>
+              </div>
+            </div>
+            
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+              </button>
+            </div>
+          </form>
+          
+          <hr class="my-4">
+          
+          <div class="text-center">
+            <p class="mb-0">Don't have an account?</p>
+            <a href="{% url 'register' %}" class="btn btn-outline-success mt-2">
+              <i class="fas fa-user-plus me-2"></i>Create New Account
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Additional Info Card -->
+      <div class="card mt-4 border-0 bg-light">
+        <div class="card-body text-center">
+          <h6 class="text-muted mb-3">Join Work Hub Today</h6>
+          <div class="row text-center">
+            <div class="col-6">
+              <div class="text-primary mb-2">
+                <i class="fas fa-briefcase fa-2x"></i>
+              </div>
+              <small class="text-muted">Find Projects</small>
+            </div>
+            <div class="col-6">
+              <div class="text-success mb-2">
+                <i class="fas fa-users fa-2x"></i>
+              </div>
+              <small class="text-muted">Hire Talent</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

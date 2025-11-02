@@ -1,0 +1,221 @@
+{% extends "jobs/layout2.html" %}
+
+{% block title %}Work Submission - {{ job.title }} - Work Hub
+
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="work-submission-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2><i class="fas fa-file-alt me-2"></i>{{ job.title }}</h2>
+                <p class="mb-2">
+                    <strong>Freelancer:</strong> {{ job.freelancer.username }} |
+                    <strong>Client:</strong> {{ job.client.username }}
+                </p>
+                <p class="mb-0">
+                    <strong>Submitted:</strong> {{ work_submission.submitted_at|date:"F j, Y \a\t g:i A" }}
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                {% if job.status == 'completed' %}
+                    <span class="status-badge status-completed">
+                        <i class="fas fa-check-circle"></i> Completed & Paid
+                    </span>
+                {% else %}
+                    <span class="status-badge status-pending">
+                        <i class="fas fa-clock"></i> {{ work_submission.get_status_display }}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Work Description -->
+            <div class="submission-card">
+                <h4><i class="fas fa-file-text text-primary me-2"></i>Work Description</h4>
+                <hr>
+                <div class="work-description">
+                    {{ work_submission.description|linebreaks }}
+                </div>
+                
+                {% if work_submission.additional_notes %}
+                    <div class="mt-4">
+                        <h5><i class="fas fa-sticky-note text-warning me-2"></i>Additional Notes</h5>
+                        <div class="additional-notes bg-light p-3 rounded">
+                            {{ work_submission.additional_notes|linebreaks }}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Attached Files -->
+            <div class="submission-card">
+                <h4><i class="fas fa-paperclip text-success me-2"></i>Attached Files 
+                    <span class="badge bg-secondary">{{ work_files.count }}</span>
+                </h4>
+                <hr>
+                
+                {% if work_files %}
+                    {% for file in work_files %}
+                        <div class="file-item">
+                            <div class="file-icon">
+                                <i class="fas {{ file.get_file_type_icon }}"></i>
+                            </div>
+                            <div class="file-info">
+                                <div class="file-name">{{ file.original_name }}</div>
+                                <div class="file-meta">
+                                    {{ file.get_formatted_size }} • 
+                                    Uploaded {{ file.uploaded_at|date:"M j, Y \a\t g:i A" }}
+                                </div>
+                            </div>
+                            <div class="file-actions">
+                                <a href="{{ file.file.url }}" class="download-btn" download>
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-file fa-3x mb-3 opacity-50"></i>
+                        <p>No files attached to this submission.</p>
+                    </div>
+                {% endif %}
+            </div>
+            <!-- Payment Status Card (New) -->
+            <div class="submission-card">
+                <h5><i class="fas fa-money-check-alt text-success me-2"></i>Payment Status</h5>
+                <hr>
+                {% if job.status == 'completed' %}
+                    <div class="alert alert-success alert-permanent">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>Payment Completed!</strong><br>
+                        <small>Payment of ${{ job.budget }} has been released to {{ job.freelancer.username }}</small>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-clock"></i>
+                        <strong>Payment Processing</strong><br>
+                        <small>Payment will be automatically released upon work submission review</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Job Details -->
+            <div class="submission-card">
+                <h5><i class="fas fa-info-circle text-info me-2"></i>Job Details</h5>
+                <hr>
+                <div class="job-detail-item mb-3">
+                    <strong>Category:</strong><br>
+                    <span class="badge bg-light text-dark">{{ job.get_category_display }}</span>
+                </div>
+                <div class="job-detail-item mb-3">
+                    <strong>Budget:</strong><br>
+                    <span class="text-success fs-5">${{ job.budget }}</span>
+                </div>
+                <div class="job-detail-item mb-3">
+                    <strong>Deadline:</strong><br>
+                    {{ job.deadline|date:"F j, Y" }}
+                </div>
+                <div class="job-detail-item mb-3">
+                    <strong>Status:</strong><br>
+                    {% if job.status == 'completed' %}
+                        <span class="badge bg-success">{{ job.get_status_display }}</span>
+                    {% else %}
+                        <span class="badge bg-primary">{{ job.get_status_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Submission Stats -->
+            <div class="submission-card">
+                <h5><i class="fas fa-chart-bar text-warning me-2"></i>Submission Stats</h5>
+                <hr>
+                <div class="stat-item mb-2">
+                    <strong>Files Submitted:</strong> {{ work_files.count }}
+                </div>
+                <div class="stat-item mb-2">
+                    <strong>Total File Size:</strong> 
+                    {% if work_submission.get_total_files_size > 0 %}
+                        {{ work_submission.get_total_files_size|filesizeformat }}
+                    {% else %}
+                        0 Bytes
+                    {% endif %}
+                </div>
+                <div class="stat-item mb-2">
+                    <strong>Submission Date:</strong><br>
+                    {{ work_submission.submitted_at|date:"M j, Y" }}
+                </div>
+                <div class="stat-item">
+                    <strong>Time Since Submission:</strong><br>
+                    {{ work_submission.submitted_at|timesince }} ago
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Info Section (Only for clients viewing completed work) -->
+    {% if is_client %}
+        <div class="submission-info mt-4">
+            <div class="alert alert-info alert-permanent">
+                <i class="fas fa-info-circle"></i>
+                <strong>Work Delivered Successfully!</strong>
+                <p class="mb-0 mt-2">
+                    The freelancer has completed and delivered the work as requested. 
+                    You can download all submitted files and review the work description above. 
+                    {% if job.status == 'completed' %}
+                        Payment of ${{ job.budget }} has been automatically released to the freelancer.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Review Section -->
+            {% if job.status == 'completed' and is_client %}
+                <div class="submission-card">
+                    <h5><i class="fas fa-star text-warning me-2"></i>Review Freelancer</h5>
+                    <hr>
+                    {% if has_review %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-check-circle"></i>
+                            <strong>Review Submitted</strong><br>
+                            <small>You've already reviewed this freelancer for this job.</small>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'reviews:view_review' job.id %}" class="btn btn-outline-primary">
+                                <i class="fas fa-eye"></i> View Your Review
+                            </a>
+                            <a href="{% url 'reviews:edit_review' job.id %}" class="btn btn-outline-warning">
+                                <i class="fas fa-edit"></i> Edit Review
+                            </a>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-3">Share your experience working with {{ job.freelancer.username }}</p>
+                        <a href="{% url 'reviews:write_review' job.id %}" class="btn btn-warning btn-lg w-100">
+                            <i class="fas fa-star me-2"></i>Write a Review
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+    <!-- Navigation -->
+    <div class="text-center mt-4">
+        <a href="{% url 'my_jobs' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Back to My Jobs
+        </a>
+        {% if is_freelancer %}
+            <a href="{% url 'job_list' %}" class="btn btn-primary ms-2">
+                <i class="fas fa-search"></i> Find More Projects
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
