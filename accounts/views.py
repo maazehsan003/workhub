@@ -21,30 +21,50 @@ def register(request):
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
 
+        # Validate passwords match
         if password1 != password2:
-            messages.error(request, "Passwords do not match")
-            return render(request, "accounts/register.html")
+            return JsonResponse({
+                "success": False,
+                "message": "Passwords do not match"
+            })
 
+        # Check if username exists
         if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already taken")
-            return render(request, "accounts/register.html")
+            return JsonResponse({
+                "success": False,
+                "message": "Username already taken"
+            })
 
-        # Create user
-        user = User.objects.create_user(username=username, email=email, password=password1)
-        Profile.objects.create(user=user)
-        login(request, user)
+        # Check if email exists (optional but recommended)
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({
+                "success": False,
+                "message": "Email already registered"
+            })
 
-        csrf_token = get_token(request)
+        try:
+            # Create user
+            user = User.objects.create_user(username=username, email=email, password=password1)
+            Profile.objects.create(user=user)
+            login(request, user)
 
-        return JsonResponse({
-            "success": True,
-            "message": "Account created successfully!",
-            "csrfToken": csrf_token 
-        })
+            csrf_token = get_token(request)
 
+            return JsonResponse({
+                "success": True,
+                "message": "Account created successfully!",
+                "csrfToken": csrf_token 
+            })
+        except Exception as e:
+            return JsonResponse({
+                "success": False,
+                "message": f"An error occurred: {str(e)}"
+            })
+
+    # GET request - render the form
     if request.method == "GET":
         return render(request, "accounts/register.html")
-
+    
 def save_role(request):
     if request.method == "POST":
         role = request.POST.get("role")
