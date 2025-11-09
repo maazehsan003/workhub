@@ -23,11 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "fallback-secret-key")  # Fallback for local
-DEBUG = True
+DEBUG = False
 
 from decouple import config
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['maazehsan.pythonanywhere.com']
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

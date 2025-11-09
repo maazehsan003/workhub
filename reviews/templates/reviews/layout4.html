@@ -4,6 +4,7 @@
 <html lang="en">
     <head>
         <title>{% block title %}Work Hub{% endblock %}</title>
+        <link rel="icon" sizes="32x32" href="{% static 'accounts/workhub.png' %}">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         {% csrf_token %}
         <meta name="csrf-token" content="{{ csrf_token }}">
